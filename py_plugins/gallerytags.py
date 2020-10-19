@@ -55,6 +55,10 @@ def copy_tags(client):
 				'id': gallery.get('id'),
 				'title': scene.get('title')
 			}
+			if scene.get('details'):
+				gallery_data['details'] = scene.get('details')
+			if scene.get('url'):
+				gallery_data['url'] = scene.get('url')
 			if scene.get('date'):
 				gallery_data['date'] = scene.get('date')
 			if scene.get('rating'):
@@ -63,7 +67,7 @@ def copy_tags(client):
 				gallery_data['studio_id'] = scene.get('studio').get('id')
 			if scene.get('tags'):
 				tag_ids = [t.get('id') for t in scene.get('tags')]
-				gallery_data['tags_ids'] = tag_ids
+				gallery_data['tag_ids'] = tag_ids
 			if scene.get('performers'):
 				performer_ids = [p.get('id') for p in scene.get('performers')]
 				gallery_data['performer_ids'] = performer_ids

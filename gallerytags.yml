@@ -4,7 +4,7 @@ version: 1.0
 url: https://github.com/niemands/StashPlugins
 exec:
   - python
-  - "{pluginDir}/py_plugins/copytags.py"
+  - "{pluginDir}/py_plugins/gallerytags.py"
 interface: raw
 tasks:
   - name: Create CopyTags tag

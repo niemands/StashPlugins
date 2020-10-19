@@ -40,15 +40,39 @@ def run(json_input, output):
 
 
 def copy_tags(client):
+	count = 0
 	tag = client.findTagIdWithName("CopyTags")
 	tag_ids = [tag]
 
 	galleries = client.findGalleriesByTags(tag_ids)
 
+	# TODO: Multithreading
 	for gallery in galleries:
 		if gallery.get('scene') is not None:
-			# TODO: Get details from scene and add to gallery
-			pass
+			scene_id = gallery.get('scene').get('id')
+			scene = client.getSceneById(scene_id)
+			gallery_data = {
+				'id': gallery.get('id'),
+				'title': scene.get('title')
+			}
+			if scene.get('date'):
+				gallery_data['date'] = scene.get('date')
+			if scene.get('rating'):
+				gallery_data['rating'] = scene.get('rating')
+			if scene.get('studio'):
+				gallery_data['studio_id'] = scene.get('studio').get('id')
+			if scene.get('tags'):
+				tag_ids = [t.get('id') for t in scene.get('tags')]
+				gallery_data['tags_ids'] = tag_ids
+			if scene.get('performers'):
+				performer_ids = [p.get('id') for p in scene.get('performers')]
+				gallery_data['performer_ids'] = performer_ids
+
+			client.updateGallery(gallery_data)
+			log.LogDebug(f'Copied information to gallery {gallery.get("id")}')
+			count += 1
+
+	log.LogInfo(f'Copied scene information to {count} galleries')
 
 
 def add_tag(client):

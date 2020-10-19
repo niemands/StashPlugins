@@ -95,6 +95,40 @@ class StashInterface:
 
 		self.__callGraphQL(query, variables)
 
+	def getSceneById(self, scene_id):
+		query = """
+			query findScene($id: ID!) {
+				findScene(id: $id) {
+					id
+					title
+					details
+					url
+					date
+					rating
+					gallery {
+						id
+					}
+					studio {
+						id
+					}
+					tags {
+						id
+					}
+					performers {
+						id
+					}
+				}
+			}
+		"""
+
+		variables = {
+			"id": scene_id
+		}
+
+		result = self.__callGraphQL(query, variables)
+
+		return result.get('findScene')
+
 	def findRandomSceneId(self):
 		query = """
 			query findScenes($filter: FindFilterType!) {
@@ -132,6 +166,19 @@ class StashInterface:
 			}
 		"""
 		variables = {'input': scene_data}
+
+		self.__callGraphQL(query, variables)
+
+	def updateGallery(self, gallery_data):
+		query = """
+			mutation galleryUpdate($input: GalleryUpdateInput!) {
+				galleryUpdate(input: $input) {
+					id
+				}
+			}
+		"""
+
+		variables = {'input': gallery_data}
 
 		self.__callGraphQL(query, variables)
 

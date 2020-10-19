@@ -1,68 +1,73 @@
 import json
 import sys
-import time
 
 import log
 from stash_interface import StashInterface
 
-# raw plugins may accept the plugin input from stdin, or they can elect
-# to ignore it entirely. In this case it optionally reads from the
-# command-line parameters.
+
 def main():
-	input = readJSONInput()
+	json_input = read_json_input()
 
 	output = {}
-	run(input, output)
+	run(json_input, output)
 
 	out = json.dumps(output)
 	print(out + "\n")
 
-def readJSONInput():
-	input = sys.stdin.read()
-	return json.loads(input)
 
-def run(input, output):
-	modeArg = input['args']["mode"]
+def read_json_input():
+	json_input = sys.stdin.read()
+	return json.loads(json_input)
+
+
+def run(json_input, output):
+	mode_arg = json_input['args']['mode']
 
 	try:
-		if modeArg == "" or modeArg == "create":
-			client = StashInterface(input["server_connection"])
-			addTag(client)
-		elif modeArg == "remove":
-			client = StashInterface(input["server_connection"])
-			removeTag(client)
-		elif modeArg == "copy":
-			client = StashInterface(input["server_connection"])
-			copyTags()
+		if mode_arg == "" or mode_arg == "create":
+			client = StashInterface(json_input["server_connection"])
+			add_tag(client)
+		elif mode_arg == "remove":
+			client = StashInterface(json_input["server_connection"])
+			remove_tag(client)
+		elif mode_arg == "copy":
+			client = StashInterface(json_input["server_connection"])
+			copy_tags(client)
 	except Exception as e:
 		raise
-		#output["error"] = str(e)
-		#return
 
 	output["output"] = "ok"
 
 
-def copyTags(client):
-	pass
+def copy_tags(client):
+	tag = client.findTagIdWithName("CopyTags")
+	tag_ids = [tag]
+
+	galleries = client.findGalleriesByTags(tag_ids)
+
+	for gallery in galleries:
+		if gallery.get('scene') is not None:
+			pass
 
 
-def addTag(client):
-	tagName = "CopyTags"
-	tagID = client.findTagIdWithName(tagName)
+def add_tag(client):
+	tag_name = "CopyTags"
+	tag_id = client.findTagIdWithName(tag_name)
 
-	if tagID == None:
-		tagID = client.createTagWithName(tagName)
+	if tag_id is None:
+		tag_id = client.createTagWithName(tag_name)
 
 
-def removeTag(client):
-	tagName = "CopyTags"
-	tagID = client.findTagIdWithName(tagName)
+def remove_tag(client):
+	tag_name = "CopyTags"
+	tag_id = client.findTagIdWithName(tag_name)
 
-	if tagID == None:
+	if tag_id is None:
 		log.LogInfo("Tag does not exist. Nothing to remove")
 		return
 
 	log.LogInfo("Destroying tag")
-	client.destroyTag(tagID)
+	client.destroyTag(tag_id)
+
 
 main()

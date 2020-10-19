@@ -2,6 +2,7 @@ import requests
 import sys
 import log
 
+
 class StashInterface:
 	port = ""
 	url = ""
@@ -28,10 +29,9 @@ class StashInterface:
 		# Stash GraphQL endpoint
 		self.url = scheme + "://" + domain + ":" + str(self.port) + "/graphql"
 
-	def __callGraphQL(self, query, variables = None):
-		json = {}
-		json['query'] = query
-		if variables != None:
+	def __callGraphQL(self, query, variables=None):
+		json = {'query': query}
+		if variables is not None:
 			json['variables'] = variables
 
 		response = requests.post(self.url, json=json, headers=self.headers, cookies=self.cookies)
@@ -46,15 +46,18 @@ class StashInterface:
 		elif response.status_code == 401:
 			sys.exit("HTTP Error 401, Unauthorised. Cookie authentication most likely failed")
 		else:
-			raise Exception("GraphQL query failed:{} - {}. Query: {}. Variables: {}".format(response.status_code, response.content, query, variables))
+			raise Exception(
+				"GraphQL query failed:{} - {}. Query: {}. Variables: {}".format(
+					response.status_code, response.content, query, variables)
+			)
 
 	def findTagIdWithName(self, name):
 		query = """
 			query {
-			  allTags {
-			    id
-			    name
-			  }
+				allTags {
+				id
+				name
+				}
 			}
 		"""
 
@@ -68,9 +71,9 @@ class StashInterface:
 	def createTagWithName(self, name):
 		query = """
 			mutation tagCreate($input:TagCreateInput!) {
-			  tagCreate(input: $input){
-			    id
-			  }
+				tagCreate(input: $input){
+					id
+				}
 			}
 		"""
 		variables = {'input': {
@@ -80,14 +83,14 @@ class StashInterface:
 		result = self.__callGraphQL(query, variables)
 		return result["tagCreate"]["id"]
 
-	def destroyTag(self, id):
+	def destroyTag(self, tag_id):
 		query = """
 			mutation tagDestroy($input: TagDestroyInput!) {
-			  tagDestroy(input: $input)
+				tagDestroy(input: $input)
 			}
 		"""
 		variables = {'input': {
-			'id': id
+			'id': tag_id
 		}}
 
 		self.__callGraphQL(query, variables)
@@ -95,15 +98,15 @@ class StashInterface:
 	def findRandomSceneId(self):
 		query = """
 			query findScenes($filter: FindFilterType!) {
-			  findScenes(filter: $filter) {
-			    count
-			    scenes {
-			      id
-			      tags {
-			        id
-			      }
-			    }
-			  }
+				findScenes(filter: $filter) {
+					count
+					scenes {
+						id
+						tags {
+							id
+						}
+					}
+				}
 			}
 		"""
 
@@ -120,15 +123,15 @@ class StashInterface:
 		return result["findScenes"]["scenes"][0]
 
 	# This method wipes rating, tags, performers, gallery and movie if omitted
-	def updateScene(self, sceneData):
+	def updateScene(self, scene_data):
 		query = """
 			mutation sceneUpdate($input:SceneUpdateInput!) {
-			  sceneUpdate(input: $input) {
-			    id
-			  }
+				sceneUpdate(input: $input) {
+					id
+				}
 			}
 		"""
-		variables = {'input': sceneData}
+		variables = {'input': scene_data}
 
 		self.__callGraphQL(query, variables)
 
@@ -140,20 +143,20 @@ class StashInterface:
 	# Searches all pages from given page on (default: 1)
 	def __findScenesByPathRegex(self, regex, page=1):
 		query = """
-		query findScenesByPathRegex($filter: FindFilterType!) {
-		  findScenesByPathRegex(filter:$filter)  {
-		  	count
-		    scenes {
-		      title
-		      id
-		      url
-		      rating
-		      gallery {id}
-		      studio {id}
-		      tags {id}
-		      performers {id}
-		    }
-		  }
+			query findScenesByPathRegex($filter: FindFilterType!) {
+				findScenesByPathRegex(filter:$filter)  {
+					count
+					scenes {
+						title
+						id
+						url
+						rating
+						gallery {id}
+						studio {id}
+						tags {id}
+						performers {id}
+					}
+			}
 		}
 		"""
 
@@ -172,7 +175,7 @@ class StashInterface:
 
 		# If page is full, also scan next page:
 		if result.get('findScenesByPathRegex').get('count') == 100:
-			next_page = self.__findScenesByPathRegex(regex, page+1)
+			next_page = self.__findScenesByPathRegex(regex, page + 1)
 			for scene in next_page:
 				scenes.append(scene)
 
@@ -180,33 +183,32 @@ class StashInterface:
 			log.LogDebug(f"Regex found a total of {len(scenes)} scene(s)")
 		return scenes
 
-
-	def findGalleriesByTags(self, tags_ids):
-		return __findGalleriesByTags(tags)
+	def findGalleriesByTags(self, tag_ids):
+		return self.__findGalleriesByTags(tag_ids)
 
 	# Searches for galleries with given tags
 	# Requires a list of tagIds
 	def __findGalleriesByTags(self, tag_ids, page=1):
 		query = """
-		query findGalleriesByTags($tags: [ID!], $page: Int) {
-		  findGalleries(
-		    gallery_filter: { tags: { value: $tags, modifier: INCLUDES_ALL } }
-		    filter: { per_page: 100, page: $page }
-		  ) {
-		    count
-		    galleries {
-		      id
-		      scene {
-		        id
-		      }
-		    }
-		  }
+			query findGalleriesByTags($tags: [ID!], $page: Int) {
+				findGalleries(
+					gallery_filter: { tags: { value: $tags, modifier: INCLUDES_ALL } }
+					filter: { per_page: 100, page: $page }
+				) {
+					count
+					galleries {
+					id
+					scene {
+						id
+					}
+				}
+			}
 		}
 		"""
 
 		variables = {
-		  "tags": tag_ids,
-		  "page": page
+			"tags": tag_ids,
+			"page": page
 		}
 
 		result = self.__callGraphQL(query, variables)
@@ -216,7 +218,7 @@ class StashInterface:
 		# If page is full, also scan next page(s) recursively:
 		if result.get('findGalleries').get('count') == 100:
 			log.LogDebug(f"Page {page} is full, also scanning next page")
-			next_page = self.__findGalleriesByTags(tag_ids, page+1)
+			next_page = self.__findGalleriesByTags(tag_ids, page + 1)
 			for gallery in next_page:
 				galleries.append(gallery)
 

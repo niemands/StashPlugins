@@ -1,7 +1,7 @@
 name: Copy information to gallery
-description: Copy information from attached scene to all galleries with
+description: Copy information from attached scene to all galleries with CopyTags tag
 version: 1.0
-#url: http://www.github.com/stashapp/stash
+url: https://github.com/niemands/StashPlugins
 exec:
   - python
   - "{pluginDir}/py_plugins/copytags.py"

@@ -172,7 +172,7 @@ class StashInterface:
 
 		# If page is full, also scan next page:
 		if result.get('findScenesByPathRegex').get('count') == 100:
-			next_page = self.findScenesByPathRegex(regex, page+1)
+			next_page = self.__findScenesByPathRegex(regex, page+1)
 			for scene in next_page:
 				scenes.append(scene)
 
@@ -181,9 +181,12 @@ class StashInterface:
 		return scenes
 
 
+	def findGalleriesByTags(self, tags_ids):
+		return __findGalleriesByTags(tags)
+
 	# Searches for galleries with given tags
 	# Requires a list of tagIds
-	def findGalleryByTags(self, tag_ids, page=1):
+	def __findGalleriesByTags(self, tag_ids, page=1):
 		query = """
 		query findGalleriesByTags($tags: [ID!], $page: Int) {
 		  findGalleries(
@@ -213,7 +216,7 @@ class StashInterface:
 		# If page is full, also scan next page(s) recursively:
 		if result.get('findGalleries').get('count') == 100:
 			log.LogDebug(f"Page {page} is full, also scanning next page")
-			next_page = self.findGalleryByTags(tag_ids, page+1)
+			next_page = self.__findGalleriesByTags(tag_ids, page+1)
 			for gallery in next_page:
 				galleries.append(gallery)
 

@@ -1,0 +1,21 @@
+name: Copy information to gallery
+description: Copy information from attached scene to all galleries with
+version: 1.0
+#url: http://www.github.com/stashapp/stash
+exec:
+  - python
+  - "{pluginDir}/py_plugins/copytags.py"
+interface: raw
+tasks:
+  - name: Create CopyTags tag
+    description: Creates a "CopyTags" tag. Add this tag to any gallery
+    defaultArgs:
+      mode: create
+  - name: Remove CopyTags tag
+    description: Removes the "CopyTags" tag from all galleries and deletes the tag.
+    defaultArgs:
+      mode: remove
+  - name: Copy Tags
+    description: Copys information from attached scene to galleries with tag "CopyTags"
+    defaultArgs:
+      mode: copy

@@ -174,8 +174,47 @@ class StashInterface:
 		if result.get('findScenesByPathRegex').get('count') == 100:
 			next_page = self.findScenesByPathRegex(regex, page+1)
 			for scene in next_page:
-				ret.append(scene)
+				scenes.append(scene)
 
 		if page == 1:
 			log.LogDebug(f"Regex found a total of {len(scenes)} scene(s)")
 		return scenes
+
+
+	# Searches for galleries with given tags
+	# Requires a list of tagIds
+	def findGalleryByTags(self, tag_ids, page=1):
+		query = """
+		query findGalleriesByTags($tags: [ID!], $page: Int) {
+		  findGalleries(
+		    gallery_filter: { tags: { value: $tags, modifier: INCLUDES_ALL } }
+		    filter: { per_page: 100, page: $page }
+		  ) {
+		    count
+		    galleries {
+		      id
+		      scene {
+		        id
+		      }
+		    }
+		  }
+		}
+		"""
+
+		variables = {
+		  "tags": tag_ids,
+		  "page": page
+		}
+
+		result = self.__callGraphQL(query, variables)
+
+		galleries = result.get('findGalleries').get('galleries')
+
+		# If page is full, also scan next page(s) recursively:
+		if result.get('findGalleries').get('count') == 100:
+			log.LogDebug(f"Page {page} is full, also scanning next page")
+			next_page = self.findGalleryByTags(tag_ids, page+1)
+			for gallery in next_page:
+				galleries.append(gallery)
+
+		return galleries

@@ -33,7 +33,7 @@ def run(json_input, output):
 		elif mode_arg == "copy":
 			client = StashInterface(json_input["server_connection"])
 			copy_tags(client)
-	except Exception as e:
+	except Exception:
 		raise
 
 	output["output"] = "ok"
@@ -47,6 +47,7 @@ def copy_tags(client):
 
 	for gallery in galleries:
 		if gallery.get('scene') is not None:
+			# TODO: Get details from scene and add to gallery
 			pass
 
 
@@ -55,7 +56,7 @@ def add_tag(client):
 	tag_id = client.findTagIdWithName(tag_name)
 
 	if tag_id is None:
-		tag_id = client.createTagWithName(tag_name)
+		client.createTagWithName(tag_name)
 
 
 def remove_tag(client):

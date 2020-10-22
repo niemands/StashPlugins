@@ -6,7 +6,7 @@ A collection of python plugins for stash
 Plugin config | Description
 --------------  | ------------
 set_ph_urls.yml | Add urls to scenes downloaded by Youtube-dl
-gallerytags.yml | Copy information from attached scene to all galleries with CopyTags tag
+gallerytags.yml | Copy information from attached scene to galleries
     
 ### Download instructions:
 Drop the py_plugins folder as well as all desired plugin configurations in stash's plugin folder

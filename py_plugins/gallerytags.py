@@ -42,9 +42,14 @@ def run(json_input, output):
 def copy_tags(client):
 	count = 0
 	tag = client.findTagIdWithName("CopyTags")
+	if tag is None:
+		sys.exit("Tag CopyTags does not exist. Please create it via the 'Create CopyTags tag' task")
+
 	tag_ids = [tag]
 
 	galleries = client.findGalleriesByTags(tag_ids)
+
+	log.LogDebug(f"Found {len(galleries)} galleries with CopyTags tag")
 
 	# TODO: Multithreading
 	for gallery in galleries:
@@ -85,6 +90,9 @@ def add_tag(client):
 
 	if tag_id is None:
 		client.createTagWithName(tag_name)
+		log.LogInfo("Tag created successfully")
+	else:
+		log.LogInfo("Tag already exists")
 
 
 def remove_tag(client):

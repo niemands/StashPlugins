@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 
 import log
 from stash_interface import StashInterface
@@ -33,25 +34,19 @@ def run(json_input, output):
 		elif mode_arg == "copy":
 			client = StashInterface(json_input["server_connection"])
 			copy_tags(client)
+		elif mode_arg == "copyall":
+			client = StashInterface(json_input["server_connection"])
+			copy_all_tags(client)
 	except Exception:
 		raise
 
 	output["output"] = "ok"
 
 
-def copy_tags(client):
-	count = 0
-	tag = client.findTagIdWithName("CopyTags")
-	if tag is None:
-		sys.exit("Tag CopyTags does not exist. Please create it via the 'Create CopyTags tag' task")
-
-	tag_ids = [tag]
-
-	galleries = client.findGalleriesByTags(tag_ids)
-
-	log.LogDebug(f"Found {len(galleries)} galleries with CopyTags tag")
-
+# Helper function
+def __copy_tags(client, galleries):
 	# TODO: Multithreading
+	count = 0
 	for gallery in galleries:
 		if gallery.get('scene') is not None:
 			scene_id = gallery.get('scene').get('id')
@@ -80,6 +75,36 @@ def copy_tags(client):
 			client.updateGallery(gallery_data)
 			log.LogDebug(f'Copied information to gallery {gallery.get("id")}')
 			count += 1
+	return count
+
+
+def copy_tags(client):
+	tag = client.findTagIdWithName("CopyTags")
+	if tag is None:
+		sys.exit("Tag CopyTags does not exist. Please create it via the 'Create CopyTags tag' task")
+
+	tag_ids = [tag]
+
+	galleries = client.findGalleriesByTags(tag_ids)
+
+	log.LogDebug(f"Found {len(galleries)} galleries with CopyTags tag")
+
+	count = __copy_tags(client, galleries)
+
+	log.LogInfo(f'Copied scene information to {count} galleries')
+
+
+def copy_all_tags(client):
+	log.LogWarning("#######################################")
+	log.LogWarning("Warning! This task will copy all information to all galleries with attached scenes")
+	log.LogWarning("You have 30 seconds to cancel this task before it starts copying")
+	log.LogWarning("#######################################")
+
+	time.sleep(30)
+	log.LogInfo("Start copying information. This may take a while depending on the amount of galleries")
+	# Get all galleries
+	galleries = client.findGalleriesByTags([])
+	count = __copy_tags(client, galleries)
 
 	log.LogInfo(f'Copied scene information to {count} galleries')
 

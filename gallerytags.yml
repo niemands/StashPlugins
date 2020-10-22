@@ -20,7 +20,7 @@ tasks:
     defaultArgs:
       mode: copy
   - name: Copy Tags for all galleries
-    description: Copys information from attached scene for ALL galleries. You have 30 seconds to cancel, before this task actually starts copying
+    description: Copies information from attached scene for ALL galleries. You have 30 seconds to cancel, before this task actually starts copying
     defaultArgs:
       mode: copyall
 

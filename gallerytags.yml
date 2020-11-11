@@ -16,7 +16,7 @@ tasks:
     defaultArgs:
       mode: remove
   - name: Copy Tags
-    description: Copys information from attached scene to galleries with tag "CopyTags"
+    description: Copies information from attached scene to galleries with tag "CopyTags"
     defaultArgs:
       mode: copy
   - name: Copy Tags for all galleries

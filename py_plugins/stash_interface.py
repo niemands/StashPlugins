@@ -1,3 +1,5 @@
+from urllib.parse import urlsplit, urljoin, urlparse
+
 import requests
 import sys
 import log
@@ -237,19 +239,19 @@ class StashInterface:
 	# Requires a list of tagIds
 	def __findGalleriesByTags(self, tag_ids, page=1):
 		query = """
-			query findGalleriesByTags($tags: [ID!], $page: Int) {
-				findGalleries(
-					gallery_filter: { tags: { value: $tags, modifier: INCLUDES_ALL } }
-					filter: { per_page: 100, page: $page }
-				) {
-					count
-					galleries {
+		query findGalleriesByTags($tags: [ID!], $page: Int) {
+			findGalleries(
+				gallery_filter: { tags: { value: $tags, modifier: INCLUDES_ALL } }
+				filter: { per_page: 100, page: $page }
+			) {
+				count
+				galleries {
+				id
+				scene {
 					id
-					scene {
-						id
-					}
 				}
 			}
+		}
 		}
 		"""
 
@@ -270,3 +272,104 @@ class StashInterface:
 				galleries.append(gallery)
 
 		return galleries
+
+	def findScenesByTags(self, tag_ids):
+		return self.__findScenesByTags(tag_ids)
+
+	def __findScenesByTags(self, tag_ids, page=1):
+		query = """
+		query($tags: [ID!], $page: Int) {
+			findScenes(
+				scene_filter: { tags: { modifier: INCLUDES_ALL, value: $tags } }
+				filter: { per_page: 1000, page: $page }
+			) {
+				count
+				scenes {
+					id
+					url
+				}
+			}
+		}
+		"""
+
+		variables = {
+			"page": page,
+			"tags": tag_ids
+		}
+
+		result = self.__callGraphQL(query, variables)
+		scenes = result.get('findScenes').get('scenes')
+
+		if len(scenes) == 1000:
+			log.LogDebug(f"Page {page} is full, also scanning next page")
+			next_page = self.__findGalleriesByTags(tag_ids, page + 1)
+			for scene in next_page:
+				scenes.append(scene)
+
+		return scenes
+
+	# Scrape
+	def scrapeSceneURL(self, url):
+		query = """
+		query($url: String!) {
+			scrapeSceneURL(url: $url) {
+				title
+				details
+				date
+				url
+				tags {
+					name
+					stored_id
+				}
+				studio {
+					name
+					stored_id
+				}
+				performers {
+					name
+					stored_id
+				}
+				image
+			}
+		}
+		"""
+
+		variables = {
+			'url': url
+		}
+
+		result = self.__callGraphQL(query, variables)
+		return result.get('scrapeSceneURL')
+
+	def createStudio(self, name, url=None):
+		query = """
+			mutation($name: String!, $url: String) {
+				studioCreate(input: { name: $name, url: $url }) {
+					id
+				}
+			}
+		"""
+		variables = {
+			'name': name,
+			'url': url
+		}
+
+		result = self.__callGraphQL(query, variables)
+		return result.get("studioCreate").get("id")
+
+	def createPerformerByName(self, name):
+		query = """
+			mutation($name: String!) {
+				performerCreate(input: { name: $name }) {
+					id
+				}
+			}
+		"""
+
+		variables = {
+			'name': name
+		}
+
+		result = self.__callGraphQL(query, variables)
+		return result.get('performerCreate').get('id')
+

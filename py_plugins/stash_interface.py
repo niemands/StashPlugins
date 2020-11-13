@@ -373,3 +373,12 @@ class StashInterface:
 		result = self.__callGraphQL(query, variables)
 		return result.get('performerCreate').get('id')
 
+	def findMovieByName(self, name):
+		query = "query {allMovies {id name aliases date rating studio {id name} director synopsis}}"
+
+		response = self.__callGraphQL(query)
+
+		for movie in response.get('allMovies'):
+			if movie.get('name') == name:
+				return movie
+		return None

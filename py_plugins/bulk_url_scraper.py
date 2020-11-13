@@ -6,6 +6,9 @@ import time
 import log
 from stash_interface import StashInterface
 
+# Name of the tag, that will be used for selecting scenes for bulk scraping
+tag_name = "scrape"
+
 
 def main():
 	json_input = read_json_input()
@@ -15,6 +18,15 @@ def main():
 
 	out = json.dumps(output)
 	print(out + "\n")
+
+
+# Waits the remaining time between the last timestamp and the configured delay in seconds
+def wait(delay, time_last, time_now):
+	time_last = int(time_last)
+	time_now = int(time_now)
+	if time_now > time_last:
+		if time_now - time_last < delay:
+			time.sleep(delay - (time_now - time_last) + 1)
 
 
 def read_json_input():
@@ -29,7 +41,12 @@ def run(json_input, output):
 		if mode_arg == "" or mode_arg == "scrape":
 			client = StashInterface(json_input["server_connection"])
 			bulk_scrape(client)
-		# TODO: Tag creation
+		elif mode_arg == "create":
+			client = StashInterface(json_input["server_connection"])
+			add_tag(client)
+		elif mode_arg == "remove":
+			client = StashInterface(json_input["server_connection"])
+			remove_tag(client)
 	except Exception:
 		raise
 
@@ -37,14 +54,19 @@ def run(json_input, output):
 
 
 def __bulk_scrape(client, scenes, create_missing_performers=False, create_missing_tags=False, create_missing_studios=False, delay=5):
-	missing_scrapers = list()
+	last_request = -1
+	if delay > 0:
+		# Initialize last request with current time + delay time
+		last_request = time.time() + delay
 
+	missing_scrapers = list()
 	count = 0
 
 	# Scrape if url not in missing_scrapers
 	for scene in scenes:
 		if urlparse(scene.get("url")).netloc not in missing_scrapers:
-			# TODO: Use delay between scrapes
+			if delay:
+				wait(delay, last_request, time.time())
 			scraped_data = client.scrapeSceneURL(scene.get('url'))
 			# If result is null, add url to missing_scrapers
 			if scraped_data is None:
@@ -119,7 +141,7 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 
 def bulk_scrape(client, create_missing_performers=False, create_missing_tags=False, create_missing_studios=False, delay=5):
 	# Search for all scenes with scrape tag
-	tag = client.findTagIdWithName("scrape")
+	tag = client.findTagIdWithName(tag_name)
 	if tag is None:
 		sys.exit("Tag scrape does not exist. Please create it via the 'Create scrape tag' task")
 
@@ -128,6 +150,27 @@ def bulk_scrape(client, create_missing_performers=False, create_missing_tags=Fal
 	log.LogInfo(f'Found {len(scenes)} scenes with scrape tag')
 	count = __bulk_scrape(client, scenes, create_missing_performers, create_missing_tags, create_missing_studios, delay)
 	log.LogInfo(f'Scraped data for {count} scenes')
+
+
+def add_tag(client):
+	tag_id = client.findTagIdWithName(tag_name)
+
+	if tag_id is None:
+		client.createTagWithName(tag_name)
+		log.LogInfo("Tag created successfully")
+	else:
+		log.LogInfo("Tag already exists")
+
+
+def remove_tag(client):
+	tag_id = client.findTagIdWithName(tag_name)
+
+	if tag_id is None:
+		log.LogInfo("Tag does not exist. Nothing to remove")
+		return
+
+	log.LogInfo("Destroying tag")
+	client.destroyTag(tag_id)
 
 
 main()

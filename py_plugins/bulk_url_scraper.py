@@ -7,7 +7,7 @@ import log
 from stash_interface import StashInterface
 
 # Name of the tag, that will be used for selecting scenes for bulk scraping
-tag_name = "scrape"
+control_tag = "scrape"
 
 
 def main():
@@ -102,7 +102,7 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 						if create_missing_tags and tag.get('name') != "":
 							# Capitalize each word
 							tag_name = " ".join(x.capitalize() for x in tag.get('name').split(" "))
-							log.LogDebug(f'Create missing tag: "{tag_name}"')
+							log.LogInfo(f'Create missing tag: {tag_name}')
 							tag_id = client.createTagWithName(tag_name)
 							tag_ids.append(tag_id)
 				if len(tag_ids) > 0:
@@ -116,7 +116,7 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 					else:
 						if create_missing_performers and performer.get('name') != "":
 							performer_name = " ".join(x.capitalize() for x in performer.get('name').split(" "))
-							log.LogDebug(f'Create missing performer: "{performer_name}"')
+							log.LogInfo(f'Create missing performer: {performer_name}')
 							performer_id = client.createPerformerByName(performer_name)
 							performer_ids.append(performer_id)
 				if len(performer_ids) > 0:
@@ -129,7 +129,7 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 				else:
 					if create_missing_studios:
 						studio_name = " ".join(x.capitalize() for x in studio.get('name').split(" "))
-						log.LogDebug(f'Creating missing studio "{studio_name}"')
+						log.LogInfo(f'Creating missing studio {studio_name}')
 						studio_url = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(scene.get('url')))
 						studio_id = client.createStudio(studio_name, studio_url)
 						update_data['studio_id'] = studio_id
@@ -144,7 +144,7 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 
 def bulk_scrape(client, create_missing_performers=False, create_missing_tags=False, create_missing_studios=False, delay=5):
 	# Search for all scenes with scrape tag
-	tag = client.findTagIdWithName(tag_name)
+	tag = client.findTagIdWithName(control_tag)
 	if tag is None:
 		sys.exit("Tag scrape does not exist. Please create it via the 'Create scrape tag' task")
 
@@ -156,17 +156,17 @@ def bulk_scrape(client, create_missing_performers=False, create_missing_tags=Fal
 
 
 def add_tag(client):
-	tag_id = client.findTagIdWithName(tag_name)
+	tag_id = client.findTagIdWithName(control_tag)
 
 	if tag_id is None:
-		client.createTagWithName(tag_name)
+		client.createTagWithName(control_tag)
 		log.LogInfo("Tag created successfully")
 	else:
 		log.LogInfo("Tag already exists")
 
 
 def remove_tag(client):
-	tag_id = client.findTagIdWithName(tag_name)
+	tag_id = client.findTagIdWithName(control_tag)
 
 	if tag_id is None:
 		log.LogInfo("Tag does not exist. Nothing to remove")

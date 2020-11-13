@@ -64,6 +64,9 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 
 	# Scrape if url not in missing_scrapers
 	for scene in scenes:
+		if scene.get('url') is None or scene.get('url') == "":
+			log.LogInfo(f"Scene {scene.get('id')} is missing url")
+			continue
 		if urlparse(scene.get("url")).netloc not in missing_scrapers:
 			if delay:
 				wait(delay, last_request, time.time())

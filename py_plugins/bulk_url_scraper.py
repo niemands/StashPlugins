@@ -60,10 +60,20 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 		last_request = time.time() + delay
 
 	missing_scrapers = list()
+
+	# Number of scraped scenes
 	count = 0
+
+	total = len(scenes)
+	# Index for progress bar
+	i = 0
 
 	# Scrape if url not in missing_scrapers
 	for scene in scenes:
+		# Update status bar
+		i += 1
+		log.LogProgress(i/total)
+
 		if scene.get('url') is None or scene.get('url') == "":
 			log.LogInfo(f"Scene {scene.get('id')} is missing url")
 			continue

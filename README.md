@@ -3,10 +3,11 @@ A collection of python plugins for stash
 
 ### Currently available plugins:
 
-Plugin config | Description
---------------  | ------------
-set_ph_urls.yml | Add urls to scenes downloaded by Youtube-dl
-gallerytags.yml | Copy information from attached scene to galleries
+Plugin config        | Description
+-------------------- | ---------------------------------------------------
+set_ph_urls.yml      | Add urls to scenes downloaded by Youtube-dl
+gallerytags.yml      | Copy information from attached scene to galleries
+bulk_url_scraper.yml | Bulk scene url scraping
     
 ### Download instructions:
 Drop the py_plugins folder as well as all desired plugin configurations in stash's plugin folder

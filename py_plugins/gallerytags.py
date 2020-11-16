@@ -37,6 +37,9 @@ def run(json_input, output):
 		elif mode_arg == "copyall":
 			client = StashInterface(json_input["server_connection"])
 			copy_all_tags(client)
+		elif mode_arg == "studioImageCopy":
+			client = StashInterface(json_input["server_connection"])
+			image_studio_copy(client)
 	except Exception:
 		raise
 
@@ -107,6 +110,44 @@ def copy_all_tags(client):
 	count = __copy_tags(client, galleries)
 
 	log.LogInfo(f'Copied scene information to {count} galleries')
+
+
+def image_studio_copy(client):
+	galleries = client.findGalleries()
+
+	# List of gallery ids for each studio
+	# {'studio_id': [gallery_ids]}
+	studio_mapping = {}
+
+	for gallery in galleries:
+		studio = gallery.get('studio')
+		if studio is not None:
+			if studio_mapping.get(studio.get('id')):
+				studio_mapping[studio.get('id')].append(int(gallery.get('id')))
+			else:
+				studio_mapping[studio.get('id')] = [int(gallery.get('id'))]
+
+	log.LogDebug(f'Found {len(studio_mapping)} studios with galleries')
+
+	for studio, galleries in studio_mapping.items():
+		studio_id = int(studio)
+		log.LogDebug(f'There are {len(galleries)} galleries with studio {studio_id}')
+
+		# Get images with gallery ids
+		image_filter = {
+			"galleries": {
+				"value": galleries,
+				"modifier": "INCLUDES"
+			}
+		}
+
+		images = client.findImages(image_filter)
+		log.LogDebug(f'There are a total of {len(images)} images with studio {studio_id}')
+		to_update = [int(image.get('id')) for image in images if image.get('studio') is None]
+		log.LogInfo(f'Adding studio {studio_id} to {len(to_update)} images')
+
+		# Bulk update images with studio_id
+		client.updateImageStudio(image_ids=to_update, studio_id=studio_id)
 
 
 def add_tag(client):

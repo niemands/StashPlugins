@@ -270,3 +270,97 @@ class StashInterface:
 				galleries.append(gallery)
 
 		return galleries
+
+	def findGalleries(self, gallery_filter=None):
+		return self.__findGalleries(gallery_filter)
+
+	def __findGalleries(self, gallery_filter=None, page=1):
+		per_page = 100
+		query = """
+			query($studio_ids: [ID!], $page: Int, $per_page: Int) {
+				findGalleries(
+					gallery_filter: { studios: { modifier: INCLUDES, value: $studio_ids } }
+					filter: { per_page: $per_page, page: $page }
+				) {
+					count
+					galleries {
+						id
+						studio {id}
+					}
+				}
+			}
+		"""
+
+		variables = {
+			"page": page,
+			"per_page": per_page
+		}
+		if gallery_filter:
+			variables['gallery_filter'] = gallery_filter
+
+		result = self.__callGraphQL(query, variables)
+
+		galleries = result.get('findGalleries').get('galleries')
+
+		# If page is full, also scan next page(s) recursively:
+		if len(galleries) == per_page:
+			log.LogDebug(f"Page {page} is full, also scanning next page")
+			next_page = self.__findGalleries(gallery_filter, page + 1)
+			for gallery in next_page:
+				galleries.append(gallery)
+
+		return galleries
+
+	def findImages(self, image_filter=None):
+		return self.__findImages(image_filter)
+
+	def __findImages(self, image_filter=None, page=1):
+		per_page = 1000
+		query = """
+		query($per_page: Int, $page: Int, $image_filter: ImageFilterType) {
+			findImages(image_filter: $image_filter ,filter: { per_page: $per_page, page: $page }) {
+				count
+				images {
+					id
+					studio {
+						id
+					}
+				}
+			}
+		}
+		"""
+
+		variables = {
+			'per_page': per_page,
+			'page': page
+		}
+		if image_filter:
+			variables['image_filter'] = image_filter
+
+		result = self.__callGraphQL(query, variables)
+
+		images = result.get('findImages').get('images')
+
+		if len(images) == per_page:
+			log.LogDebug(f"Page {page} is full, also scanning next page")
+			next_page = self.__findImages(image_filter, page + 1)
+			for image in next_page:
+				images.append(image)
+
+		return images
+
+	def updateImageStudio(self, image_ids, studio_id):
+		query = """
+		mutation($ids: [ID!], $studio_id: ID) {
+			bulkImageUpdate(input: { ids: $ids, studio_id: $studio_id }) {
+				id
+			}
+		}
+		"""
+
+		variables = {
+			"ids": image_ids,
+			"studio_id": studio_id
+		}
+
+		self.__callGraphQL(query, variables)

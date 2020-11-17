@@ -300,7 +300,7 @@ class StashInterface:
 		scenes = result.get('findScenes').get('scenes')
 
 		if len(scenes) == 1000:
-			next_page = self.__findGalleriesByTags(tag_ids, page + 1)
+			next_page = self.__findScenesByTags(tag_ids, page + 1)
 			for scene in next_page:
 				scenes.append(scene)
 

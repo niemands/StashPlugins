@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 import time
 
 import log
+import config
 from stash_interface import StashInterface
 
 # Name of the tag, that will be used for selecting scenes for bulk scraping
@@ -153,6 +154,25 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 
 
 def bulk_scrape(client, create_missing_performers=False, create_missing_tags=False, create_missing_studios=False, delay=5):
+	try:
+		create_missing_studios = bool(config.create_missing_studios)
+		create_missing_tags = bool(config.create_missing_tags)
+		create_missing_performers = bool(config.create_missing_performers)
+		delay = int(config.delay)
+	except AttributeError as e:
+		log.LogWarning(e)
+		log.LogWarning("Using defaults for missing config values")
+	except ValueError as e:
+		log.LogWarning(e)
+		log.LogWarning("Using defaults for wrong values")
+
+	log.LogInfo('##### Bulk URL Scraper #####')
+	log.LogInfo(f'create_missing_performers: {create_missing_performers}')
+	log.LogInfo(f'create_missing_tags: {create_missing_tags}')
+	log.LogInfo(f'create_missing_studios: {create_missing_studios}')
+	log.LogInfo(f'delay: {delay}')
+	log.LogInfo('#############################')
+
 	# Search for all scenes with scrape tag
 	tag = client.findTagIdWithName(control_tag)
 	if tag is None:

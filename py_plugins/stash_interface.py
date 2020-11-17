@@ -264,7 +264,6 @@ class StashInterface:
 
 		# If page is full, also scan next page(s) recursively:
 		if len(galleries) == 100:
-			log.LogDebug(f"Page {page} is full, also scanning next page")
 			next_page = self.__findGalleriesByTags(tag_ids, page + 1)
 			for gallery in next_page:
 				galleries.append(gallery)
@@ -304,7 +303,6 @@ class StashInterface:
 
 		# If page is full, also scan next page(s) recursively:
 		if len(galleries) == per_page:
-			log.LogDebug(f"Page {page} is full, also scanning next page")
 			next_page = self.__findGalleries(gallery_filter, page + 1)
 			for gallery in next_page:
 				galleries.append(gallery)
@@ -342,7 +340,6 @@ class StashInterface:
 		images = result.get('findImages').get('images')
 
 		if len(images) == per_page:
-			log.LogDebug(f"Page {page} is full, also scanning next page")
 			next_page = self.__findImages(image_filter, page + 1)
 			for image in next_page:
 				images.append(image)

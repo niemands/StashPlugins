@@ -266,7 +266,6 @@ class StashInterface:
 
 		# If page is full, also scan next page(s) recursively:
 		if len(galleries) == 100:
-			log.LogDebug(f"Page {page} is full, also scanning next page")
 			next_page = self.__findGalleriesByTags(tag_ids, page + 1)
 			for gallery in next_page:
 				galleries.append(gallery)
@@ -301,7 +300,6 @@ class StashInterface:
 		scenes = result.get('findScenes').get('scenes')
 
 		if len(scenes) == 1000:
-			log.LogDebug(f"Page {page} is full, also scanning next page")
 			next_page = self.__findGalleriesByTags(tag_ids, page + 1)
 			for scene in next_page:
 				scenes.append(scene)

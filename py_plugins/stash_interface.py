@@ -184,6 +184,19 @@ class StashInterface:
 
 		self.__callGraphQL(query, variables)
 
+	def updateImage(self, image_data):
+		query = """
+			mutation($input: ImageUpdateInput!) {
+				imageUpdate(input: $input) {
+					id
+				}
+			}
+		"""
+
+		variables = {'input': image_data}
+
+		self.__callGraphQL(query,variables)
+
 	# Returns all scenes for the given regex
 	def findScenesByPathRegex(self, regex):
 		return self.__findScenesByPathRegex(regex)
@@ -322,7 +335,18 @@ class StashInterface:
 				count
 				images {
 					id
+					title
 					studio {
+						id
+					}
+					performers {
+						id
+					}
+					tags {
+						id
+					}
+					rating
+					galleries {
 						id
 					}
 				}

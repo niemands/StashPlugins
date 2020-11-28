@@ -1,0 +1,11 @@
+name: Update Image Titles
+description: Updates all images, so natural sort will work for all images
+version: 1.0
+url: https://github.com/niemands/StashPlugins
+exec:
+  - python
+  - "{pluginDir}/py_plugins/update_image_titles.py"
+interface: raw
+tasks:
+  - name: Update image titles
+    description: Updates all images, so natural sort will work for all images

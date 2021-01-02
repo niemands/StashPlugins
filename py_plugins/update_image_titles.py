@@ -1,6 +1,8 @@
 import json
 import sys
 import log
+import threading
+from queue import Queue
 from stash_interface import StashInterface
 
 
@@ -22,20 +24,11 @@ def readJSONInput():
     return json.loads(json_input)
 
 
-def update_image_titles(client):
-    log.LogInfo('Getting all images...')
-    images = client.findImages()
-    total = len(images)
-    log.LogInfo(f"Found {total} images")
-    if total == 0:
-        log.LogInfo('Why are you even running this plugin?')
-        return
+def thread_function(q: Queue, thread_lock: threading.Lock, count: int, total: int, client: StashInterface):
+    log.LogDebug(f"Created {threading.current_thread().name}")
+    while not q.empty():
+        image = q.get()
 
-    log.LogInfo('Start updating images (this might take a while)')
-    count = 0
-    for image in images:
-        count += 1
-        log.LogProgress(count/total)
         image_data = {
             'id': image.get('id'),
             'title': image.get('title')
@@ -55,6 +48,43 @@ def update_image_titles(client):
             image_data['gallery_ids'] = gallery_ids
 
         client.updateImage(image_data)
+
+        thread_lock.acquire()
+        count += 1
+        log.LogProgress(count / total)
+        thread_lock.release()
+
+        q.task_done()
+    log.LogDebug(f"{threading.current_thread().name} finished")
+    return True
+
+
+def update_image_titles(client, nmb_threads=8):
+    log.LogInfo('Getting all images...')
+    images = client.findImages()
+    total = len(images)
+    log.LogInfo(f"Found {total} images")
+    if total == 0:
+        log.LogInfo('Why are you even running this plugin?')
+        return
+
+    # nmb of finished images
+    count = 0
+    # in the rare case, that there are less then #threads images
+    nmb_threads = min(nmb_threads, total)
+    thread_lock = threading.Lock()
+    q = Queue(maxsize=0)
+    for image in images:
+        q.put(image)
+
+    log.LogInfo('Start updating images (this might take a while)')
+    # Create threads and start them
+    for i in range(nmb_threads):
+        worker = threading.Thread(target=thread_function, name=f"Thread-{i}", args=(q, thread_lock, count, total, client))
+        worker.start()
+
+    # Wait for all threads to be finished
+    q.join()
 
     log.LogInfo(f'Finished updating all {total} images')
 

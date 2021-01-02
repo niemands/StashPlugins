@@ -1,9 +1,6 @@
-from urllib.parse import urlsplit, urljoin, urlparse
-
 import requests
 import sys
 import log
-
 
 class StashInterface:
 	port = ""
@@ -30,6 +27,7 @@ class StashInterface:
 
 		# Stash GraphQL endpoint
 		self.url = scheme + "://" + domain + ":" + str(self.port) + "/graphql"
+		log.LogDebug(f"Using stash GraphQl endpoint at {self.url}")
 
 	def __callGraphQL(self, query, variables=None):
 		json = {'query': query}
@@ -217,6 +215,7 @@ class StashInterface:
 						studio {id}
 						tags {id}
 						performers {id}
+						path
 					}
 			}
 		}

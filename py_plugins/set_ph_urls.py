@@ -32,7 +32,11 @@ def add_ph_urls(client):
 
     for scene in scenes:
         if scene.get('url') is None or scene.get('url') == "":
-            ph_id = os.path.splitext(scene.get('title').split('-ph')[1])[0]
+            try:
+                ph_id = os.path.splitext(scene.get('path').split('-ph')[1])[0]
+            except IndexError:
+                log.LogDebug(f"Error, skipping scene {scene.get('id')}")
+                continue
             url = f"https://www.pornhub.com/view_video.php?viewkey=ph{ph_id}"
 
             scene_data = {
@@ -59,6 +63,9 @@ def add_ph_urls(client):
 
             if scene.get('gallery'):
                 scene_data['gallery_id'] = scene.get('gallery').get('id')
+
+            if scene.get('rating'):
+                scene_data['rating'] = scene.get('rating')
 
             client.updateScene(scene_data)
             log.LogDebug(f'Set url for scene {scene.get("id")}')

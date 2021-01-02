@@ -107,6 +107,7 @@ def copy_all_tags(client):
 	log.LogInfo("Start copying information. This may take a while depending on the amount of galleries")
 	# Get all galleries
 	galleries = client.findGalleriesByTags([])
+	log.LogDebug(f"Found {len(galleries)} galleries")
 	count = __copy_tags(client, galleries)
 
 	log.LogInfo(f'Copied scene information to {count} galleries')
@@ -119,6 +120,7 @@ def image_studio_copy(client):
 	# {'studio_id': [gallery_ids]}
 	studio_mapping = {}
 
+	# Get studio from each gallery and add it to the mapping
 	for gallery in galleries:
 		studio = gallery.get('studio')
 		if studio is not None:
@@ -129,9 +131,10 @@ def image_studio_copy(client):
 
 	log.LogDebug(f'Found {len(studio_mapping)} studios with galleries')
 
+	# Bulk update all images in galleries for each studio
 	for studio, galleries in studio_mapping.items():
 		studio_id = int(studio)
-		log.LogDebug(f'There are {len(galleries)} galleries with studio {studio_id}')
+		log.LogDebug(f'There are {len(galleries)} galleries with studio id {studio_id}')
 
 		# Get images with gallery ids
 		image_filter = {
@@ -142,8 +145,10 @@ def image_studio_copy(client):
 		}
 
 		images = client.findImages(image_filter)
-		log.LogDebug(f'There are a total of {len(images)} images with studio {studio_id}')
-		to_update = [int(image.get('id')) for image in images if image.get('studio') is None]
+		log.LogDebug(f'There is a total of {len(images)} images with studio id {studio_id}')
+
+		# Only update images with no studio or different studio
+		to_update = [int(image.get('id')) for image in images if (image.get('studio') is None or int(image.get('studio').get('id')) != studio_id)]
 		log.LogInfo(f'Adding studio {studio_id} to {len(to_update)} images')
 
 		# Bulk update images with studio_id

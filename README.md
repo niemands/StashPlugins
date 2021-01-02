@@ -1,6 +1,8 @@
 # StashPlugins
 A collection of python plugins for stash
 
+Warning: The plugins currently do not work in a docker container on a remote machine!
+
 ### Currently available plugins:
 
 Plugin config           | Description                                         | Notes

@@ -10,7 +10,7 @@ import os
 from stash_interface import StashInterface
 
 current_path = str(pathlib.Path(__file__).parent.absolute())
-plugin_folder = current_path + '/../yt-dl_downloader/'
+plugin_folder = str(pathlib.Path(current_path + '/../yt-dl_downloader/').absolute())
 
 
 def main():
@@ -48,7 +48,7 @@ def run(json_input, output):
 def tag_scenes(client):
     endRegex = r'\.(?:[mM][pP]4 |[wW][mM][vV])$'
     beginRegex = ".*("
-    with open(plugin_folder + "downloaded.json") as json_file:
+    with open(os.path.join(plugin_folder, "downloaded.json")) as json_file:
         data = json.load(json_file)
         for i in range(0, len(data)):
             if i < len(data) - 1:
@@ -59,7 +59,7 @@ def tag_scenes(client):
         scenes = client.findScenesByPathRegex(beginRegex)
 
         for scene in scenes:
-            log.LogDebug("ScenePath" + scene.get('path'))
+            log.LogDebug(os.path.join("ScenePath", scene.get('path')))
             basename = os.path.basename(scene.get('path'))
             filename = os.path.splitext(basename)[0]
 
@@ -100,7 +100,8 @@ def tag_scenes(client):
                     scene_data['rating'] = scene.get('rating')
 
                 client.updateScene(scene_data)
-    os.remove(plugin_folder + "downloaded.json")
+    os.remove(os.path.join(plugin_folder, "downloaded.json"))
+
 
 def get_scrape_tag(client):
     tag_name = "scrape"
@@ -114,13 +115,13 @@ def get_scrape_tag(client):
 
 
 def read_urls_and_download():
-    url_file = open(plugin_folder + 'urls.txt', 'r')
-    urls = url_file.readlines()
+    with open(os.path.join(plugin_folder, 'urls.txt'), 'r') as url_file:
+        urls = url_file.readlines()
     downloaded = []
     for url in urls:
         if check_url_valid(url.strip()):
             download(url.strip(), downloaded)
-    with open(plugin_folder + "downloaded.json", 'w') as outfile:
+    with open(os.path.join(plugin_folder, "downloaded.json"), 'w') as outfile:
         json.dump(downloaded, outfile)
 
 
@@ -137,10 +138,11 @@ def check_url_valid(url):
 
 
 def download(url, downloaded):
-    config_path = plugin_folder + 'config.ini'
+    config_path = os.path.join(plugin_folder, 'config.ini')
+    log.LogDebug(f"Reading config file at: {config_path}")
     config = configparser.ConfigParser()
     config.read(config_path)
-    download_dir = config.get('PATHS', 'downloadDir') + '/%(id)s.%(ext)s'
+    download_dir = str(pathlib.Path(config.get('PATHS', 'downloadDir') + '/%(id)s.%(ext)s').absolute())
     log.LogDebug("Downloading " + url + " to: " + download_dir)
 
     ydl = youtube_dl.YoutubeDL({

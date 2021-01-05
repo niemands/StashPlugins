@@ -47,27 +47,38 @@ class StashInterface:
         elif response.status_code == 401:
             sys.exit("HTTP Error 401, Unauthorised. Cookie authentication most likely failed")
         else:
-            raise Exception(
+            raise ConnectionError(
                 "GraphQL query failed:{} - {}. Query: {}. Variables: {}".format(
                     response.status_code, response.content, query, variables)
             )
 
     def scan_for_new_files(self):
-        query = """
-                mutation {
-                    metadataScan (
-                        input: {
-                            useFileMetadata: true 
-                            scanGenerateSprites: false
-                            scanGeneratePreviews: false
-                            scanGenerateImagePreviews: false
-                        }
-                    ) 
-                }
+        try:
+            query = """
+                    mutation {
+                        metadataScan (
+                            input: {
+                                useFileMetadata: true 
+                                scanGenerateSprites: false
+                                scanGeneratePreviews: false
+                                scanGenerateImagePreviews: false
+                            }
+                        ) 
+                    }
             """
-        result = self.__callGraphQL(query)
+            result = self.__callGraphQL(query)
+        except ConnectionError:
+            query = """
+                    mutation {
+                        metadataScan (
+                            input: {
+                                useFileMetadata: true
+                            }
+                        ) 
+                    }
+            """
+            result = self.__callGraphQL(query)
         log.LogDebug("ScanResult" + str(result))
-        return None
 
     def findTagIdWithName(self, name):
         query = """

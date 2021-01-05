@@ -38,7 +38,6 @@ def run(json_input, output):
             client.scan_for_new_files()
         elif mode_arg == "tag":
             tag_scenes(client)
-            pass
     except Exception:
         raise
 

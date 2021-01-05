@@ -58,6 +58,9 @@ class StashInterface:
                     metadataScan (
                         input: {
                             useFileMetadata: true 
+                            scanGenerateSprites: false
+                            scanGeneratePreviews: false
+                            scanGenerateImagePreviews: false
                         }
                     ) 
                 }

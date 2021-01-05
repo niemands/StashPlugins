@@ -82,13 +82,13 @@ class StashInterface:
 
     def findTagIdWithName(self, name):
         query = """
-			query {
-				allTags {
-				id
-				name
-				}
-			}
-		"""
+            query {
+                allTags {
+                id
+                name
+                }
+            }
+        """
 
         result = self.__callGraphQL(query)
 
@@ -99,12 +99,12 @@ class StashInterface:
 
     def createTagWithName(self, name):
         query = """
-			mutation tagCreate($input:TagCreateInput!) {
-				tagCreate(input: $input){
-					id
-				}
-			}
-		"""
+            mutation tagCreate($input:TagCreateInput!) {
+                tagCreate(input: $input){
+                    id
+                }
+            }
+        """
         variables = {'input': {
             'name': name
         }}
@@ -114,10 +114,10 @@ class StashInterface:
 
     def destroyTag(self, tag_id):
         query = """
-			mutation tagDestroy($input: TagDestroyInput!) {
-				tagDestroy(input: $input)
-			}
-		"""
+            mutation tagDestroy($input: TagDestroyInput!) {
+                tagDestroy(input: $input)
+            }
+        """
         variables = {'input': {
             'id': tag_id
         }}
@@ -126,29 +126,29 @@ class StashInterface:
 
     def getSceneById(self, scene_id):
         query = """
-			query findScene($id: ID!) {
-				findScene(id: $id) {
-					id
-					title
-					details
-					url
-					date
-					rating
-					gallery {
-						id
-					}
-					studio {
-						id
-					}
-					tags {
-						id
-					}
-					performers {
-						id
-					}
-				}
-			}
-		"""
+            query findScene($id: ID!) {
+                findScene(id: $id) {
+                    id
+                    title
+                    details
+                    url
+                    date
+                    rating
+                    gallery {
+                        id
+                    }
+                    studio {
+                        id
+                    }
+                    tags {
+                        id
+                    }
+                    performers {
+                        id
+                    }
+                }
+            }
+        """
 
         variables = {
             "id": scene_id
@@ -160,18 +160,18 @@ class StashInterface:
 
     def findRandomSceneId(self):
         query = """
-			query findScenes($filter: FindFilterType!) {
-				findScenes(filter: $filter) {
-					count
-					scenes {
-						id
-						tags {
-							id
-						}
-					}
-				}
-			}
-		"""
+            query findScenes($filter: FindFilterType!) {
+                findScenes(filter: $filter) {
+                    count
+                    scenes {
+                        id
+                        tags {
+                            id
+                        }
+                    }
+                }
+            }
+        """
 
         variables = {'filter': {
             'per_page': 1,
@@ -188,24 +188,24 @@ class StashInterface:
     # This method wipes rating, tags, performers, gallery and movie if omitted
     def updateScene(self, scene_data):
         query = """
-			mutation sceneUpdate($input:SceneUpdateInput!) {
-				sceneUpdate(input: $input) {
-					id
-				}
-			}
-		"""
+            mutation sceneUpdate($input:SceneUpdateInput!) {
+                sceneUpdate(input: $input) {
+                    id
+                }
+            }
+        """
         variables = {'input': scene_data}
 
         self.__callGraphQL(query, variables)
 
     def updateGallery(self, gallery_data):
         query = """
-			mutation galleryUpdate($input: GalleryUpdateInput!) {
-				galleryUpdate(input: $input) {
-					id
-				}
-			}
-		"""
+            mutation galleryUpdate($input: GalleryUpdateInput!) {
+                galleryUpdate(input: $input) {
+                    id
+                }
+            }
+        """
 
         variables = {'input': gallery_data}
 
@@ -213,12 +213,12 @@ class StashInterface:
 
     def updateImage(self, image_data):
         query = """
-			mutation($input: ImageUpdateInput!) {
-				imageUpdate(input: $input) {
-					id
-				}
-			}
-		"""
+            mutation($input: ImageUpdateInput!) {
+                imageUpdate(input: $input) {
+                    id
+                }
+            }
+        """
 
         variables = {'input': image_data}
 
@@ -232,23 +232,23 @@ class StashInterface:
     # Searches all pages from given page on (default: 1)
     def __findScenesByPathRegex(self, regex, page=1):
         query = """
-			query findScenesByPathRegex($filter: FindFilterType!) {
-				findScenesByPathRegex(filter:$filter)  {
-					count
-					scenes {
-						title
-						id
-						url
-						rating
-						gallery {id}
-						studio {id}
-						tags {id}
-						performers {id}
-						path
-					}
-			}
-		}
-		"""
+            query findScenesByPathRegex($filter: FindFilterType!) {
+                findScenesByPathRegex(filter:$filter)  {
+                    count
+                    scenes {
+                        title
+                        id
+                        url
+                        rating
+                        gallery {id}
+                        studio {id}
+                        tags {id}
+                        performers {id}
+                        path
+                    }
+                }
+            }
+        """
 
         variables = {
             "filter": {
@@ -280,21 +280,21 @@ class StashInterface:
     # Requires a list of tagIds
     def __findGalleriesByTags(self, tag_ids, page=1):
         query = """
-		query findGalleriesByTags($tags: [ID!], $page: Int) {
-			findGalleries(
-				gallery_filter: { tags: { value: $tags, modifier: INCLUDES_ALL } }
-				filter: { per_page: 100, page: $page }
-			) {
-				count
-				galleries {
-				id
-				scene {
-					id
-				}
-			}
-		}
-		}
-		"""
+        query findGalleriesByTags($tags: [ID!], $page: Int) {
+            findGalleries(
+                gallery_filter: { tags: { value: $tags, modifier: INCLUDES_ALL } }
+                filter: { per_page: 100, page: $page }
+            ) {
+                count
+                galleries {
+                    id
+                    scene {
+                        id
+                    }
+                }
+            }
+        }
+        """
 
         variables = {
             "tags": tag_ids,
@@ -319,19 +319,19 @@ class StashInterface:
     def __findGalleries(self, gallery_filter=None, page=1):
         per_page = 100
         query = """
-			query($studio_ids: [ID!], $page: Int, $per_page: Int) {
-				findGalleries(
-					gallery_filter: { studios: { modifier: INCLUDES, value: $studio_ids } }
-					filter: { per_page: $per_page, page: $page }
-				) {
-					count
-					galleries {
-						id
-						studio {id}
-					}
-				}
-			}
-		"""
+            query($studio_ids: [ID!], $page: Int, $per_page: Int) {
+                findGalleries(
+                    gallery_filter: { studios: { modifier: INCLUDES, value: $studio_ids } }
+                    filter: { per_page: $per_page, page: $page }
+                ) {
+                    count
+                    galleries {
+                        id
+                        studio {id}
+                    }
+                }
+            }
+        """
 
         variables = {
             "page": page,
@@ -358,29 +358,29 @@ class StashInterface:
     def __findImages(self, image_filter=None, page=1):
         per_page = 1000
         query = """
-		query($per_page: Int, $page: Int, $image_filter: ImageFilterType) {
-			findImages(image_filter: $image_filter ,filter: { per_page: $per_page, page: $page }) {
-				count
-				images {
-					id
-					title
-					studio {
-						id
-					}
-					performers {
-						id
-					}
-					tags {
-						id
-					}
-					rating
-					galleries {
-						id
-					}
-				}
-			}
-		}
-		"""
+        query($per_page: Int, $page: Int, $image_filter: ImageFilterType) {
+            findImages(image_filter: $image_filter ,filter: { per_page: $per_page, page: $page }) {
+                count
+                images {
+                    id
+                    title
+                    studio {
+                        id
+                    }
+                    performers {
+                        id
+                    }
+                    tags {
+                        id
+                    }
+                    rating
+                    galleries {
+                        id
+                    }
+                }
+            }
+        }
+        """
 
         variables = {
             'per_page': per_page,
@@ -402,12 +402,12 @@ class StashInterface:
 
     def updateImageStudio(self, image_ids, studio_id):
         query = """
-		mutation($ids: [ID!], $studio_id: ID) {
-			bulkImageUpdate(input: { ids: $ids, studio_id: $studio_id }) {
-				id
-			}
-		}
-		"""
+        mutation($ids: [ID!], $studio_id: ID) {
+            bulkImageUpdate(input: { ids: $ids, studio_id: $studio_id }) {
+                id
+            }
+        }
+        """
 
         variables = {
             "ids": image_ids,
@@ -421,19 +421,19 @@ class StashInterface:
 
     def __findScenesByTags(self, tag_ids, page=1):
         query = """
-		query($tags: [ID!], $page: Int) {
-			findScenes(
-				scene_filter: { tags: { modifier: INCLUDES_ALL, value: $tags } }
-				filter: { per_page: 1000, page: $page }
-			) {
-				count
-				scenes {
-					id
-					url
-				}
-			}
-		}
-		"""
+        query($tags: [ID!], $page: Int) {
+            findScenes(
+                scene_filter: { tags: { modifier: INCLUDES_ALL, value: $tags } }
+                filter: { per_page: 1000, page: $page }
+            ) {
+                count
+                scenes {
+                    id
+                    url
+                }
+            }
+        }
+        """
 
         variables = {
             "page": page,
@@ -453,28 +453,28 @@ class StashInterface:
     # Scrape
     def scrapeSceneURL(self, url):
         query = """
-		query($url: String!) {
-			scrapeSceneURL(url: $url) {
-				title
-				details
-				date
-				url
-				tags {
-					name
-					stored_id
-				}
-				studio {
-					name
-					stored_id
-				}
-				performers {
-					name
-					stored_id
-				}
-				image
-			}
-		}
-		"""
+        query($url: String!) {
+            scrapeSceneURL(url: $url) {
+                title
+                details
+                date
+                url
+                tags {
+                    name
+                    stored_id
+                }
+                studio {
+                    name
+                    stored_id
+                }
+                performers {
+                    name
+                    stored_id
+                }
+                image
+            }
+            }
+        """
 
         variables = {
             'url': url
@@ -485,12 +485,12 @@ class StashInterface:
 
     def createStudio(self, name, url=None):
         query = """
-			mutation($name: String!, $url: String) {
-				studioCreate(input: { name: $name, url: $url }) {
-					id
-				}
-			}
-		"""
+            mutation($name: String!, $url: String) {
+                studioCreate(input: { name: $name, url: $url }) {
+                    id
+                }
+            }
+        """
         variables = {
             'name': name,
             'url': url
@@ -501,12 +501,12 @@ class StashInterface:
 
     def createPerformerByName(self, name):
         query = """
-			mutation($name: String!) {
-				performerCreate(input: { name: $name }) {
-					id
-				}
-			}
-		"""
+            mutation($name: String!) {
+                performerCreate(input: { name: $name }) {
+                    id
+                }
+            }
+        """
 
         variables = {
             'name': name

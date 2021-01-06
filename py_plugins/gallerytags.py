@@ -5,6 +5,8 @@ import time
 import log
 from stash_interface import StashInterface
 
+# Name of the tag used by this plugin
+control_tag = "CopyTags"
 
 def main():
 	json_input = read_json_input()
@@ -82,15 +84,15 @@ def __copy_tags(client, galleries):
 
 
 def copy_tags(client):
-	tag = client.findTagIdWithName("CopyTags")
+	tag = client.findTagIdWithName(control_tag)
 	if tag is None:
-		sys.exit("Tag CopyTags does not exist. Please create it via the 'Create CopyTags tag' task")
+		sys.exit(f"Tag {control_tag} does not exist. Please create it via the 'Create CopyTags tag' task")
 
 	tag_ids = [tag]
 
 	galleries = client.findGalleriesByTags(tag_ids)
 
-	log.LogDebug(f"Found {len(galleries)} galleries with CopyTags tag")
+	log.LogDebug(f"Found {len(galleries)} galleries with {control_tag} tag")
 
 	count = __copy_tags(client, galleries)
 
@@ -156,7 +158,7 @@ def image_studio_copy(client):
 
 
 def add_tag(client):
-	tag_name = "CopyTags"
+	tag_name = control_tag
 	tag_id = client.findTagIdWithName(tag_name)
 
 	if tag_id is None:
@@ -167,7 +169,7 @@ def add_tag(client):
 
 
 def remove_tag(client):
-	tag_name = "CopyTags"
+	tag_name = control_tag
 	tag_id = client.findTagIdWithName(tag_name)
 
 	if tag_id is None:

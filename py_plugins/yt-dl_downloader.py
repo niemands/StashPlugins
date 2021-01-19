@@ -156,8 +156,8 @@ def download(url, downloaded):
             log.LogDebug("Download finished!")
             downloaded.append({
                 "url": url,
-                "id": meta['id'],
-                "title": meta['title'],
+                "id": meta.get('id'),
+                "title": meta.get('title'),
             })
         except Exception as e:
             log.LogWarning(str(e))

@@ -6,6 +6,7 @@ import re
 import sys
 import json
 import os
+import shutil
 
 from stash_interface import StashInterface
 
@@ -103,7 +104,7 @@ def tag_scenes(client):
                     scene_data['rating'] = scene.get('rating')
 
                 client.updateScene(scene_data)
-    os.move(os.path.join(plugin_folder, "downloaded.json"), os.path.join(plugin_folder, "downloaded_backup.json"))
+    shutil.move(os.path.join(plugin_folder, "downloaded.json"), os.path.join(plugin_folder, "downloaded_backup.json"))
 
 
 def get_scrape_tag(client):

@@ -6,6 +6,7 @@ import re
 import sys
 import json
 import os
+import shutil
 
 from stash_interface import StashInterface
 
@@ -57,7 +58,11 @@ def tag_scenes(client):
         log.LogDebug(beginRegex + endRegex)
         scenes = client.findScenesByPathRegex(beginRegex)
 
+        total = len(scenes)
+        i = 0
         for scene in scenes:
+            i += 1
+            log.LogProgress(i/total)
             log.LogDebug(os.path.join("ScenePath", scene.get('path')))
             basename = os.path.basename(scene.get('path'))
             filename = os.path.splitext(basename)[0]
@@ -99,7 +104,7 @@ def tag_scenes(client):
                     scene_data['rating'] = scene.get('rating')
 
                 client.updateScene(scene_data)
-    os.remove(os.path.join(plugin_folder, "downloaded.json"))
+    shutil.move(os.path.join(plugin_folder, "downloaded.json"), os.path.join(plugin_folder, "downloaded_backup.json"))
 
 
 def get_scrape_tag(client):
@@ -117,7 +122,11 @@ def read_urls_and_download():
     with open(os.path.join(plugin_folder, 'urls.txt'), 'r') as url_file:
         urls = url_file.readlines()
     downloaded = []
+    total = len(urls)
+    i = 0
     for url in urls:
+        i += 1
+        log.LogProgress(i/total)
         if check_url_valid(url.strip()):
             download(url.strip(), downloaded)
     with open(os.path.join(plugin_folder, "downloaded.json"), 'w') as outfile:

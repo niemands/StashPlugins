@@ -62,6 +62,7 @@ class StashInterface:
                                 scanGenerateSprites: false
                                 scanGeneratePreviews: false
                                 scanGenerateImagePreviews: false
+                                stripFileExtension: false
                             }
                         ) 
                     }

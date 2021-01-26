@@ -131,7 +131,8 @@ def read_urls_and_download():
         log.LogProgress(i/total)
         if check_url_valid(url.strip()):
             download(url.strip(), downloaded)
-    shutil.move(downloaded_json, downloaded_backup_json)
+    if os.path.isfile(downloaded_json)
+        shutil.move(downloaded_json, downloaded_backup_json)
     with open(downloaded_json, 'w') as outfile:
         json.dump(downloaded, outfile)
 

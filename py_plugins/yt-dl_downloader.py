@@ -49,7 +49,7 @@ def tag_scenes(client):
     endRegex = r'\.(?:[mM][pP]4 |[wW][mM][vV])$'
     beginRegex = ".*("
     if not os.path.isfile(os.path.join(plugin_folder, "downloaded.json")):
-        shutil.copy(os.path.join(plugin_folder, "downloaded_backup.json"), os.path.join(plugin_folder, "downloaded.json"), *, follow_symlinks = True)
+        shutil.copyfile(os.path.join(plugin_folder, "downloaded_backup.json"), os.path.join(plugin_folder, "downloaded.json"), *, follow_symlinks = True)
     with open(os.path.join(plugin_folder, "downloaded.json")) as json_file:
         data = json.load(json_file)
         for i in range(0, len(data)):

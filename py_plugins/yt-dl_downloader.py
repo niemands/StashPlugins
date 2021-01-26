@@ -49,7 +49,7 @@ def run(json_input, output):
 def tag_scenes(client):
     endRegex = r'\.(?:[mM][pP]4 |[wW][mM][vV])$'
     beginRegex = ".*("
-    if not os.path.isfile(downloaded_json and os.path.isfile(downloaded_backup_json):
+    if not os.path.isfile(downloaded_json) and os.path.isfile(downloaded_backup_json):
         shutil.copyfile(downloaded_backup_json, downloaded_json)
     with open(downloaded_json) as json_file:
         data = json.load(json_file)

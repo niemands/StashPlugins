@@ -48,6 +48,8 @@ def run(json_input, output):
 def tag_scenes(client):
     endRegex = r'\.(?:[mM][pP]4 |[wW][mM][vV])$'
     beginRegex = ".*("
+    if not os.path.isfile(os.path.join(plugin_folder, "downloaded.json")):
+        shutil.copy(os.path.join(plugin_folder, "downloaded_backup.json"), os.path.join(plugin_folder, "downloaded.json"), *, follow_symlinks = True)
     with open(os.path.join(plugin_folder, "downloaded.json")) as json_file:
         data = json.load(json_file)
         for i in range(0, len(data)):
@@ -104,7 +106,6 @@ def tag_scenes(client):
                     scene_data['rating'] = scene.get('rating')
 
                 client.updateScene(scene_data)
-    shutil.move(os.path.join(plugin_folder, "downloaded.json"), os.path.join(plugin_folder, "downloaded_backup.json"))
 
 
 def get_scrape_tag(client):
@@ -129,6 +130,7 @@ def read_urls_and_download():
         log.LogProgress(i/total)
         if check_url_valid(url.strip()):
             download(url.strip(), downloaded)
+    shutil.move(os.path.join(plugin_folder, "downloaded.json"), os.path.join(plugin_folder, "downloaded_backup.json"))
     with open(os.path.join(plugin_folder, "downloaded.json"), 'w') as outfile:
         json.dump(downloaded, outfile)
 

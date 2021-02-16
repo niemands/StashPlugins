@@ -53,8 +53,11 @@ def __copy_tags(client, galleries):
 	# TODO: Multithreading
 	count = 0
 	for gallery in galleries:
-		if gallery.get('scene') is not None:
-			scene_id = gallery.get('scene').get('id')
+		if gallery.get('scenes') is not None:
+			if len(gallery.get('scenes')) > 1:
+				log.LogInfo(f'Gallery {gallery.get("id")} has multiple scenes, only copying tags from first scene')
+			# Select first scene from gallery scenes
+			scene_id = gallery.get('scenes')[0].get('id')
 			scene = client.getSceneById(scene_id)
 			gallery_data = {
 				'id': gallery.get('id'),

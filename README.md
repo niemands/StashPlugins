@@ -1,6 +1,8 @@
 # StashPlugins
 A collection of python plugins for stash
 
+Minimum stash version: v0.4.0-71
+
 ### Currently available plugins:
 
 Plugin config           | Description                                         | Notes

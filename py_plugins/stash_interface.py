@@ -1,6 +1,7 @@
 import requests
 import sys
 import log
+from urllib.parse import urlparse
 
 
 class StashInterface:
@@ -525,3 +526,11 @@ class StashInterface:
             if movie.get('name') == name:
                 return movie
         return None
+
+    def sceneScraperURLs(self):
+        query = "query {listSceneScrapers {name scene {urls supported_scrapes}}}"
+
+        response = self.__callGraphQL(query)
+        url_lists = [x.get('scene').get('urls') for x in response.get('listSceneScrapers')
+                     if 'URL' in x.get('scene').get('supported_scrapes')]
+        return [urlparse('https://' + url).netloc for sublist in url_lists for url in sublist]

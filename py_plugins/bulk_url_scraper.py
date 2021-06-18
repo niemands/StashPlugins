@@ -84,10 +84,11 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 				wait(delay, last_request, time.time())
 			scraped_data = client.scrapeSceneURL(scene.get('url'))
 			if scraped_data is None:
-				if urlparse(scene.get('url').netloc) not in supported_scrapers:
+				if urlparse(scene.get('url')).netloc not in supported_scrapers:
 					# If result is null, and url is not in list of supported scrapers, add url to missing_scrapers
 					# Faster then checking every time, if url is in list of supported scrapers
-					log.LogWarning(f"Missing scraper for {urlparse(scene.get('url')).netloc}")
+					log.LogWarning(f"Scene {scene.get('id')}: Missing scraper for {urlparse(scene.get('url')).netloc}")
+					log.LogDebug(f"Full url: {scene.get('url')}")
 					missing_scrapers.append(urlparse(scene.get('url')).netloc)
 				continue
 			# No data has been found for this scene

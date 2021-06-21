@@ -25,10 +25,11 @@ class StashInterface:
             'session': conn.get('SessionCookie').get('Value')
         }
 
-        domain = conn.get('Domain') if conn.get('Domain') else 'localhost'
+        # If stash does not accept connections from all interfaces use the host specified in the config
+        host = conn.get('Host') if '0.0.0.0' not in conn.get('Host') else 'localhost'
 
         # Stash GraphQL endpoint
-        self.url = scheme + "://" + domain + ":" + str(self.port) + "/graphql"
+        self.url = scheme + "://" + host + ":" + str(self.port) + "/graphql"
         log.LogDebug(f"Using stash GraphQl endpoint at {self.url}")
 
     def __callGraphQL(self, query, variables=None):

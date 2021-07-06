@@ -77,19 +77,23 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 		log.LogProgress(i/total)
 
 		if scene.get('url') is None or scene.get('url') == "":
+			# Skip the scene if it does not have an url
 			log.LogInfo(f"Scene {scene.get('id')} is missing url")
 			continue
-		if urlparse(scene.get("url")).netloc not in missing_scrapers:
+		if urlparse(scene.get("url")).netloc.split('www.')[-1] not in missing_scrapers:
 			if delay:
 				wait(delay, last_request, time.time())
-			scraped_data = client.scrapeSceneURL(scene.get('url'))
+			scraped_data = client.scrapeSceneURL(scene.get('url'))  # Scrape the scene
 			if scraped_data is None:
-				if urlparse(scene.get('url')).netloc not in supported_scrapers:
+				if urlparse(scene.get('url')).netloc.split('www.')[-1] not in supported_scrapers:
 					# If result is null, and url is not in list of supported scrapers, add url to missing_scrapers
 					# Faster then checking every time, if url is in list of supported scrapers
 					log.LogWarning(f"Scene {scene.get('id')}: Missing scraper for {urlparse(scene.get('url')).netloc}")
 					log.LogDebug(f"Full url: {scene.get('url')}")
 					missing_scrapers.append(urlparse(scene.get('url')).netloc)
+				else:
+					log.LogInfo(f"Could not scrape scene {scene.get('id')}")
+					log.LogDebug("Return data was None")
 				continue
 			# No data has been found for this scene
 			if not any(scraped_data.values()):
@@ -119,7 +123,8 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 							tag_name = " ".join(x.capitalize() for x in tag.get('name').split(" "))
 							log.LogInfo(f'Create missing tag: {tag_name}')
 							tag_id = client.createTagWithName(tag_name)
-							tag_ids.append(tag_id)
+							if tag_id is not None:
+								tag_ids.append(tag_id)
 				if len(tag_ids) > 0:
 					update_data['tag_ids'] = tag_ids
 
@@ -133,7 +138,8 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 							performer_name = " ".join(x.capitalize() for x in performer.get('name').split(" "))
 							log.LogInfo(f'Create missing performer: {performer_name}')
 							performer_id = client.createPerformerByName(performer_name)
-							performer_ids.append(performer_id)
+							if performer_id is not None:
+								performer_ids.append(performer_id)
 				if len(performer_ids) > 0:
 					update_data['performer_ids'] = performer_ids
 
@@ -147,8 +153,8 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 						log.LogInfo(f'Creating missing studio {studio_name}')
 						studio_url = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(scene.get('url')))
 						studio_id = client.createStudio(studio_name, studio_url)
-						update_data['studio_id'] = studio_id
-
+						if studio_id is not None:
+							update_data['studio_id'] = studio_id
 			# Update scene with scraped scene data
 			client.updateScene(update_data)
 			log.LogDebug(f"Scraped data for scene {scene.get('id')}")

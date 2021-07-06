@@ -117,7 +117,12 @@ class StashInterface:
         }}
 
         result = self.__callGraphQL(query, variables)
-        return result["tagCreate"]["id"]
+        if result.get('tagCreate'):
+            log.LogDebug(f"Created tag: {name}")
+            return result.get('tagCreate').get("id")
+        else:
+            log.LogError(f"Could not create tag: {name}")
+            return None
 
     def destroyTag(self, tag_id):
         query = """
@@ -504,7 +509,12 @@ class StashInterface:
         }
 
         result = self.__callGraphQL(query, variables)
-        return result.get("studioCreate").get("id")
+        if result.get("studioCreate"):
+            log.LogDebug(f"Created studio: {name}")
+            return result.get("studioCreate").get("id")
+        else:
+            log.LogError(f"Could not create studio: {name}")
+            return None
 
     def createPerformerByName(self, name):
         query = """
@@ -520,7 +530,12 @@ class StashInterface:
         }
 
         result = self.__callGraphQL(query, variables)
-        return result.get('performerCreate').get('id')
+        if result.get('performerCreate'):
+            log.LogDebug(f"Created performer: {name}")
+            return result.get('performerCreate').get('id')
+        else:
+            log.LogError(f"Could not create performer: {name}")
+            return None
 
     def findMovieByName(self, name):
         query = "query {allMovies {id name aliases date rating studio {id name} director synopsis}}"

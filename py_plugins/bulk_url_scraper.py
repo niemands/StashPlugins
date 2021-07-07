@@ -28,6 +28,7 @@ def wait(delay, time_last, time_now):
 	if time_now > time_last:
 		if time_now - time_last < delay:
 			time.sleep(delay - (time_now - time_last) + 1)
+	return time_now
 
 
 def read_json_input():
@@ -82,7 +83,7 @@ def __bulk_scrape(client, scenes, create_missing_performers=False, create_missin
 			continue
 		if urlparse(scene.get("url")).netloc.split('www.')[-1] not in missing_scrapers:
 			if delay:
-				wait(delay, last_request, time.time())
+				last_request = wait(delay, last_request, time.time())
 			scraped_data = client.scrapeSceneURL(scene.get('url'))  # Scrape the scene
 			if scraped_data is None:
 				if urlparse(scene.get('url')).netloc.split('www.')[-1] not in supported_scrapers:

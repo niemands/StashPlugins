@@ -1,3 +1,5 @@
+from enum import Enum
+
 import requests
 import sys
 import log
@@ -285,44 +287,33 @@ class StashInterface:
             log.LogDebug(f"Regex found a total of {len(scenes)} scene(s)")
         return scenes
 
-    def findGalleriesByTags(self, tag_ids):
-        return self.__findGalleriesByTags(tag_ids)
-
     # Searches for galleries with given tags
     # Requires a list of tagIds
-    def __findGalleriesByTags(self, tag_ids, page=1):
+    def findGalleriesByTags(self, tag_ids):
         query = """
-        query findGalleriesByTags($tags: [ID!], $page: Int) {
+        query($tags: [ID!]) {
             findGalleries(
-                gallery_filter: { tags: { value: $tags, modifier: INCLUDES_ALL } }
-                filter: { per_page: 100, page: $page }
+            gallery_filter: { tags: { modifier: INCLUDES_ALL, value: $tags } }
+            filter: { per_page: -1 }
             ) {
-                count
-                galleries {
-                    id
-                    scenes {
+            count
+            galleries {
+              id
+              scenes {
                         id
                     }
-                }
+              url
             }
+          }
         }
         """
 
         variables = {
-            "tags": tag_ids,
-            "page": page
+            "tags": tag_ids
         }
 
         result = self.__callGraphQL(query, variables)
-
         galleries = result.get('findGalleries').get('galleries')
-
-        # If page is full, also scan next page(s) recursively:
-        if len(galleries) == 100:
-            next_page = self.__findGalleriesByTags(tag_ids, page + 1)
-            for gallery in next_page:
-                galleries.append(gallery)
-
         return galleries
 
     def findGalleries(self, gallery_filter=None):
@@ -462,7 +453,7 @@ class StashInterface:
 
         return scenes
 
-    # Scrape
+    # Scrape scene information from url
     def scrapeSceneURL(self, url):
         query = """
         query($url: String!) {
@@ -494,6 +485,37 @@ class StashInterface:
 
         result = self.__callGraphQL(query, variables)
         return result.get('scrapeSceneURL')
+
+    def scrapeGalleryURL(self, url):
+        query = """
+        query($url: String!) {
+            scrapeGalleryURL(url: $url) {
+                title
+                details
+                date
+                url
+                tags {
+                    name
+                    stored_id
+                }
+                studio {
+                    name
+                    stored_id
+                }
+                performers {
+                    name
+                    stored_id
+                }
+            }
+        }
+        """
+
+        variables = {
+            'url': url
+        }
+
+        result = self.__callGraphQL(query, variables)
+        return result.get('scrapeGalleryURL')
 
     def createStudio(self, name, url=None):
         query = """
@@ -553,4 +575,11 @@ class StashInterface:
         response = self.__callGraphQL(query)
         url_lists = [x.get('scene').get('urls') for x in response.get('listSceneScrapers')
                      if 'URL' in x.get('scene').get('supported_scrapes')]
+        return [urlparse('https://' + url).netloc for sublist in url_lists for url in sublist]
+
+    def galleryScraperURLs(self):
+        query = "query {listGalleryScrapers {name gallery {urls supported_scrapes}}}"
+        response = self.__callGraphQL(query)
+        url_lists = [x.get('gallery').get('urls') for x in response.get('listGalleryScrapers')
+                     if 'URL' in x.get('gallery').get('supported_scrapes')]
         return [urlparse('https://' + url).netloc for sublist in url_lists for url in sublist]

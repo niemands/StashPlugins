@@ -131,12 +131,12 @@ def __bulk_scrape(client,
                         log.LogDebug(f"Full url: {entity.get('url')}")
                         missing_scrapers.append(url_netloc)
                     else:
-                        log.LogInfo(f"Could not scrape {entity_class.name} {entity.get('id')}")
+                        log.LogInfo(f"Could not scrape {entity_class.name.lower()} {entity.get('id')}")
                         log.LogDebug("Return data was None")
                     continue
                 # No data has been found for this scene
                 if not any(scraped_data.values()):
-                    log.LogInfo(f"Could not get data for {entity_class.name} {entity.get('id')}")
+                    log.LogInfo(f"Could not get data for {entity_class.name.lower()} {entity.get('id')}")
                     continue
 
                 update_entity(client=client, entity=entity, entity_type=entity_class,
@@ -145,7 +145,7 @@ def __bulk_scrape(client,
                               create_missing_performers=create_missing_performers,
                               create_missing_studios=create_missing_studios)
 
-                log.LogDebug(f"Scraped data for {entity_class.name} {entity.get('id')}")
+                log.LogDebug(f"Scraped data for {entity_class.name.lower()} {entity.get('id')}")
                 count += 1
 
         log.LogInfo(f"Scraped data for {count} {entity_class.value}")

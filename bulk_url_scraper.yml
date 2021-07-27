@@ -1,6 +1,6 @@
 name: Bulk Scene URL scraper
-description: Scrape scene information for all scenes with the "scrape" tag
-version: 1.1
+description: Scrape information for all scenes and galleries with the "scrape" tag
+version: 2.0
 url: https://github.com/niemands/StashPlugins
 exec:
   - python
@@ -8,14 +8,14 @@ exec:
 interface: raw
 tasks:
   - name: Create scrape tag
-    description: Create the "scrape" tag. Add this tag to all scenes that should be scraped. These scenes require the url field to be set
+    description: Create the "scrape" tag. Add this tag to all scenes and galleries that should be scraped. These require the url field to be set
     defaultArgs:
       mode: create
   - name: Remove scrape tag
-    description: Removes the "scrape" tag from all scenes and deletes the tag.
+    description: Removes the "scrape" tag from all scenes and galleries and deletes the tag.
     defaultArgs:
       mode: remove
-  - name: Scrape scenes
-    description: Scrape scene information for all scenes with the "scrape" tag. This action will overwrite all previous scene information
+  - name: Scrape urls
+    description: Scrape information for all scenes and galleries with the "scrape" tag. This action will overwrite all previous information
     defaultArgs:
       mode: scrape

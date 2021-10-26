@@ -158,6 +158,11 @@ class StashInterface:
                     performers {
                         id
                     }
+                    movies {
+                        movie {
+                            id
+                        }
+                    }
                 }
             }
         """
@@ -472,6 +477,11 @@ class StashInterface:
                     name
                     stored_id
                 }
+                movies {
+                    name
+                    stored_id
+                    url
+                }
                 image
             }
             }
@@ -566,6 +576,27 @@ class StashInterface:
             if movie.get('name') == name:
                 return movie
         return None
+
+    def createMovie(self, name, url=None):
+        query = """
+        mutation($name: String!, $url: String) {
+            movieCreate(input: { name: $name, url: $url }) {
+                id
+            }
+        }
+        """
+        variables = {
+            'name': name,
+            'url': url
+        }
+
+        result = self.__callGraphQL(query, variables)
+        if result.get("movieCreate"):
+            log.LogDebug(f"Created movie: {name}")
+            return result.get("movieCreate").get("id")
+        else:
+            log.LogError(f"Could not create movie: {name}")
+            return None
 
     def sceneScraperURLs(self):
         query = "query {listSceneScrapers {name scene {urls supported_scrapes}}}"

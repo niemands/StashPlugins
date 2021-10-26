@@ -70,6 +70,7 @@ def __bulk_scrape(client,
                   create_missing_performers=False,
                   create_missing_tags=False,
                   create_missing_studios=False,
+                  create_missing_movies=False,
                   delay=5) -> None:
     last_request = -1
     # Unpack entity dict and iterate over each type (scenes, galleries)
@@ -143,7 +144,8 @@ def __bulk_scrape(client,
                               scraped_data=scraped_data,
                               create_missing_tags=create_missing_tags,
                               create_missing_performers=create_missing_performers,
-                              create_missing_studios=create_missing_studios)
+                              create_missing_studios=create_missing_studios,
+                              create_missing_movies=create_missing_movies)
 
                 log.LogDebug(f"Scraped data for {entity_class.name.lower()} {entity.get('id')}")
                 count += 1
@@ -152,11 +154,12 @@ def __bulk_scrape(client,
 
 
 def bulk_scrape(client, create_missing_performers=False, create_missing_tags=False, create_missing_studios=False,
-                delay=5):
+                create_missing_movies=False, delay=5):
     try:
         create_missing_studios = bool(config.create_missing_studios)
         create_missing_tags = bool(config.create_missing_tags)
         create_missing_performers = bool(config.create_missing_performers)
+        create_missing_movies = bool(config.create_missing_movies)
         delay = int(config.delay)
     except AttributeError as e:
         log.LogWarning(e)
@@ -169,6 +172,7 @@ def bulk_scrape(client, create_missing_performers=False, create_missing_tags=Fal
     log.LogInfo(f'create_missing_performers: {create_missing_performers}')
     log.LogInfo(f'create_missing_tags: {create_missing_tags}')
     log.LogInfo(f'create_missing_studios: {create_missing_studios}')
+    log.LogInfo(f'create_missing_movies: {create_missing_movies}')
     log.LogInfo(f'delay: {delay}')
     log.LogInfo('#############################')
 
@@ -195,13 +199,14 @@ def bulk_scrape(client, create_missing_performers=False, create_missing_tags=Fal
             create_missing_tags=create_missing_tags,
             create_missing_performers=create_missing_performers,
             create_missing_studios=create_missing_studios,
+            create_missing_movies=create_missing_movies,
             delay=delay
         )
 
 
 # Updates an entity with the scraped data
 def update_entity(client: StashInterface, entity, entity_type: Entity, scraped_data, create_missing_tags: bool,
-                  create_missing_performers: bool, create_missing_studios: bool):
+                  create_missing_performers: bool, create_missing_studios: bool, create_missing_movies: bool):
     # Create dict with entity data
     update_data = {
         'id': entity.get('id')
@@ -259,6 +264,24 @@ def update_entity(client: StashInterface, entity, entity_type: Entity, scraped_d
                 studio_id = client.createStudio(studio_name, studio_url)
                 if studio_id is not None:
                     update_data['studio_id'] = studio_id
+
+    if scraped_data.get('movies'):
+        movies = list()
+        for movie in scraped_data.get('movies'):
+            if movie.get('stored_id'):
+                movies.append({'movie_id': movie.get('stored_id')})
+            else:
+                if create_missing_movies and movie.get('name') != '':
+                    log.LogInfo(f'Create missing movie: {movie.get("name")}')
+                    if movie.get('url') is not None and movie.get('url') != '':
+                        movie_id = client.createMovie(movie.get('name'), movie.get('url'))
+                    else:
+                        movie_id = client.createMovie(movie.get('name'))
+
+                    if movie_id is not None:
+                        movies.append({'movie_id': movie_id})
+        if len(movies) > 0:
+            update_data['movies'] = movies
 
     # Update entity with scraped scene data
     if entity_type is Entity.Scene:

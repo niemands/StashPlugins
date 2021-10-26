@@ -1,6 +1,6 @@
 name: Bulk Scene URL scraper
 description: Scrape information for all scenes and galleries with the "scrape" tag
-version: 2.0
+version: 2.1
 url: https://github.com/niemands/StashPlugins
 exec:
   - python

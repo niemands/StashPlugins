@@ -30,6 +30,9 @@ To use the plugins with a stash instance running in a (remote-) docker container
     apt install python3
     apt install python3-pip
     pip3 install requests
+    pip3 install youtube_dl
+    pip3 install configparser
+    pip3 install pathlib
     ```
 - Leave the container via `Ctrl+P,Ctrl+Q`
 - Drop the py_plugins folder as well as all desired plugin configurations in stash's plugin folder located in `config/plugins`. Create the plugins folder if it is not already there

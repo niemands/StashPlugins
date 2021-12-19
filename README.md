@@ -5,13 +5,13 @@ Minimum stash version: v0.4.0-71
 
 ### Currently available plugins:
 
-Plugin config           | Description                                         | Notes
------------------------ | --------------------------------------------------- | --------
-set_ph_urls.yml         | Add urls to pornhub scenes downloaded by Youtube-dl |
-gallerytags.yml         | Copy information from attached scene to galleries   |
-bulk_url_scraper.yml    | Bulk scene and gallery url scraping                 | Config (/py_plugins/config.py) has to be edited manually, until plugin parameters get implemented
-update_image_titles.yml | Update all image titles (Fixes natural sort)        |
-yt-dl_downloader.yml    | Download Videos automated with yt-dl and add the scrape tag for burl_url_scraper | Config files in yt-dl_downloader/ folder. Add all urls line by line to urls.txt and change download dir in config.ini |
+| Plugin config           | Description                                                                      | Notes                                                                                                                 |
+|-------------------------|----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| set_ph_urls.yml         | Add urls to pornhub scenes downloaded by Youtube-dl                              |                                                                                                                       |
+| gallerytags.yml         | Copy information from attached scene to galleries                                |                                                                                                                       |
+| bulk_url_scraper.yml    | Bulk scene and gallery url scraping                                              | Config (/py_plugins/config.py) has to be edited manually, until plugin parameters get implemented                     |
+| update_image_titles.yml | Update all image titles (Fixes natural sort)                                     |                                                                                                                       |
+| yt-dl_downloader.yml    | Download Videos automated with yt-dl and add the scrape tag for burl_url_scraper | Config files in yt-dl_downloader/ folder. Add all urls line by line to urls.txt and change download dir in config.ini |
     
 ### Download instructions:
 Drop the py_plugins folder as well as all desired plugin configurations in stash's plugin folder
@@ -30,10 +30,14 @@ To use the plugins with a stash instance running in a (remote-) docker container
     apt install python3
     apt install python3-pip
     pip3 install requests
-    pip3 install youtube_dl
-    pip3 install configparser
-    pip3 install pathlib
+    
     ```
+- If you want to use the yt-dl_downloader plugin, you also have to run the following commands:
+  ````shell
+  pip3 install youtube_dl
+  pip3 install configparser
+  pip3 install pathlib
+  ````
 - Leave the container via `Ctrl+P,Ctrl+Q`
 - Drop the py_plugins folder as well as all desired plugin configurations in stash's plugin folder located in `config/plugins`. Create the plugins folder if it is not already there
 - Change `python` to `python3` in the plugin configuration (.yml) files

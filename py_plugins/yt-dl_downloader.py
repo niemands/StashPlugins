@@ -90,6 +90,8 @@ def tag_scenes(client):
                 for t in scene.get('tags'):
                     tag_ids.append(t.get('id'))
                 tag_ids.append(get_scrape_tag(client))
+                for tag in video['tags']:
+                    tag_ids.append(client.findTagIdWithName(tag))
                 scene_data['tag_ids'] = tag_ids
 
                 performer_ids = []

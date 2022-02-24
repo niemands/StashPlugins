@@ -171,6 +171,7 @@ def download(url, downloaded):
                 "url": url,
                 "id": meta.get('id'),
                 "title": meta.get('title'),
+                "tags": meta.get('tags'),
             })
         except Exception as e:
             log.LogWarning(str(e))

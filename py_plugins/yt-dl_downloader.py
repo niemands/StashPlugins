@@ -181,14 +181,15 @@ def download(url, downloaded):
 
 
 def add_tags(client, tags):
-    for tag in tags:
-        tag_id = client.findTagIdWithName(tag)
-        
-        if tag_id is None:
-            client.createTagWithName(tag)
-            log.LogInfo("Tag created successfully")
-        else:
-            log.LogInfo("Tag already exists")
+    if tags is not None:
+        for tag in tags:
+            tag_id = client.findTagIdWithName(tag)
+            
+            if tag_id is None:
+                client.createTagWithName(tag)
+                log.LogInfo("Tag created successfully")
+            else:
+                log.LogInfo("Tag already exists")
 
 
 main()

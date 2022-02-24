@@ -179,15 +179,4 @@ def download(url, downloaded):
             log.LogWarning(str(e))
 
 
-def add_tag(client):
-    tag_name = "scrape"
-    tag_id = client.findTagIdWithName(tag_name)
-
-    if tag_id is None:
-        client.createTagWithName(tag_name)
-        log.LogInfo("Tag created successfully")
-    else:
-        log.LogInfo("Tag already exists")
-
-
 main()

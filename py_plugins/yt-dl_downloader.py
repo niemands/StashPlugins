@@ -47,19 +47,12 @@ def run(json_input, output):
 
 
 def tag_scenes(client):
-    endRegex = r'\.(?:[mM][pP]4 |[wW][mM][vV])$'
-    beginRegex = ".*("
     if not os.path.isfile(downloaded_json) and os.path.isfile(downloaded_backup_json):
         shutil.copyfile(downloaded_backup_json, downloaded_json)
     with open(downloaded_json) as json_file:
         data = json.load(json_file)
-        for i in range(0, len(data)):
-            if i < len(data) - 1:
-                beginRegex += data[i]['id'] + "|"
-            else:
-                beginRegex += data[i]['id'] + ").*"
-        log.LogDebug(beginRegex + endRegex)
-        scenes = client.findScenesByPathRegex(beginRegex)
+        regex = r'([a-zA-Z0-9]+).*\.(?:[mM][pP]4|[wW][mM][vV])$'
+        scenes = client.findScenesByPathRegex(regex)
 
         total = len(scenes)
         i = 0
@@ -90,8 +83,9 @@ def tag_scenes(client):
                 for t in scene.get('tags'):
                     tag_ids.append(t.get('id'))
                 tag_ids.append(get_scrape_tag(client))
-                for tag in video['tags']:
-                    tag_ids.append(client.findTagIdWithName(tag))
+                if video['tags'] is not None:
+                    for tag in video['tags']:
+                        tag_ids.append(client.findTagIdWithName(tag))
                 scene_data['tag_ids'] = tag_ids
 
                 performer_ids = []

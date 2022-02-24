@@ -36,7 +36,7 @@ def run(json_input, output):
     try:
         client = StashInterface(json_input["server_connection"])
         if mode_arg == "" or mode_arg == "download":
-            read_urls_and_download()
+            read_urls_and_download(client)
             client.scan_for_new_files()
         elif mode_arg == "tag":
             tag_scenes(client)
@@ -122,7 +122,7 @@ def get_scrape_tag(client):
         return tag_id
 
 
-def read_urls_and_download():
+def read_urls_and_download(client):
     with open(os.path.join(plugin_folder, 'urls.txt'), 'r') as url_file:
         urls = url_file.readlines()
     downloaded = []
@@ -133,6 +133,7 @@ def read_urls_and_download():
         log.LogProgress(i/total)
         if check_url_valid(url.strip()):
             download(url.strip(), downloaded)
+            add_tags(client, downloaded[len(downloaded)-1]["tags"])
     if os.path.isfile(downloaded_json):
         shutil.move(downloaded_json, downloaded_backup_json)
     with open(downloaded_json, 'w') as outfile:
@@ -177,6 +178,17 @@ def download(url, downloaded):
             })
         except Exception as e:
             log.LogWarning(str(e))
+
+
+def add_tags(client, tags):
+    for tag in tags:
+        tag_id = client.findTagIdWithName(tag)
+        
+        if tag_id is None:
+            client.createTagWithName(tag)
+            log.LogInfo("Tag created successfully")
+        else:
+            log.LogInfo("Tag already exists")
 
 
 main()

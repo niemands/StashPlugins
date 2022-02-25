@@ -169,6 +169,7 @@ def download(url, downloaded):
                 "id": meta.get('id'),
                 "title": meta.get('title'),
                 "tags": meta.get('tags'),
+                "performers": meta.get('actors'),
             })
         except Exception as e:
             log.LogWarning(str(e))
@@ -184,6 +185,12 @@ def add_tags(client, tags):
                 log.LogInfo("Tag created successfully")
             else:
                 log.LogInfo("Tag already exists")
+
+
+def add_performers(client, performers):
+    if performers is not None:
+        for performer in performers:
+            client.createPerformerByName(performer.get('given_name'))
 
 
 main()

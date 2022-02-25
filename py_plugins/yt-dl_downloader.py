@@ -83,8 +83,8 @@ def tag_scenes(client):
                 for t in scene.get('tags'):
                     tag_ids.append(t.get('id'))
                 tag_ids.append(get_scrape_tag(client))
-                if video['tags'] is not None:
-                    for tag in video['tags']:
+                if video.get('tags'):
+                    for tag in video.get('tags'):
                         tag_ids.append(client.findTagIdWithName(tag))
                 scene_data['tag_ids'] = tag_ids
 
@@ -127,7 +127,7 @@ def read_urls_and_download(client):
         log.LogProgress(i/total)
         if check_url_valid(url.strip()):
             download(url.strip(), downloaded)
-            add_tags(client, downloaded[len(downloaded)-1]["tags"])
+            add_tags(client, downloaded[len(downloaded)-1].get('tags'))
     if os.path.isfile(downloaded_json):
         shutil.move(downloaded_json, downloaded_backup_json)
     with open(downloaded_json, 'w') as outfile:

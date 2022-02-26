@@ -96,7 +96,9 @@ def tag_scenes(client):
                         performer_ids.append(client.findPerformerIdWithName(performer.get('given_name')))
                 scene_data['performer_ids'] = performer_ids
 
-                if scene.get('studio'):
+                if video.get('studio').get('url'):
+                    scene_data['studio_id'] = client.findStudioIdWithUrl(video.get('studio').get('url'))
+                elif scene.get('studio'):
                     scene_data['studio_id'] = scene.get('studio').get('id')
 
                 if scene.get('gallery'):
@@ -179,7 +181,6 @@ def download(url, downloaded):
                     "url": meta.get('uploader_url'),
                 },
                 "performers": meta.get('actors'),
-                "rating": meta.get('average_rating'),
             })
         except Exception as e:
             log.LogWarning(str(e))

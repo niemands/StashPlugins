@@ -1,3 +1,4 @@
+from ctypes.wintypes import VARIANT_BOOL
 import requests
 import sys
 import log
@@ -525,6 +526,29 @@ class StashInterface:
         result = self.__callGraphQL(query, variables)
         return result.get('scrapeGalleryURL')
 
+    def findStudioIdWithUrl(self, url):
+        query="""
+        query($url: String!) {
+            findStudios(
+                studio_filter: {
+                    url: {value: $url, modifier: EQUALS}
+                }
+            ){
+                studios{
+                    id
+                    name
+                }
+            }
+        }
+        """
+
+        variables = {
+            'url': url
+        }
+
+        result = self.__callGraphQL(query, variables)
+        return result.get('findStudios').get('studios')[0].get('id')
+
     def createStudio(self, name, url=None):
         query = """
             mutation($name: String!, $url: String) {
@@ -545,6 +569,31 @@ class StashInterface:
         else:
             log.LogError(f"Could not create studio: {name}")
             return None
+
+    def findPerformerIdWithName(self, name):
+        query = """
+            query($name: String!) {
+                findPerformers(
+                    performer_filter: {
+                    name: { value: $name, modifier: EQUALS }
+                    }
+                    filter: { sort: "id", direction: ASC }
+                ) {
+                    performers {
+                    id
+                    name
+                    }
+                }
+            }
+        """
+
+        variables = {
+            'name': name,
+        }
+
+        result = self.__callGraphQL(query, variables)
+        return result.get('findPerformers').get('performers')[0].get('id')
+
 
     def createPerformerByName(self, name):
         query = """

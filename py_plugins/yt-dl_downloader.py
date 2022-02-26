@@ -91,6 +91,9 @@ def tag_scenes(client):
                 performer_ids = []
                 for p in scene.get('performers'):
                     performer_ids.append(p.get('id'))
+                if video.get('performers'):
+                    for performer in video.get('performer'):
+                        performer_ids.append(client.findPerformerIdWithName(performer.get('given_name')))
                 scene_data['performer_ids'] = performer_ids
 
                 if scene.get('studio'):
@@ -128,6 +131,8 @@ def read_urls_and_download(client):
         if check_url_valid(url.strip()):
             download(url.strip(), downloaded)
             add_tags(client, downloaded[len(downloaded)-1].get('tags'))
+            add_performers(client, downloaded[len(downloaded)-1].get('performers'))
+            add_studio(client, downloaded[len(downloaded)-1].get('studio'))
     if os.path.isfile(downloaded_json):
         shutil.move(downloaded_json, downloaded_backup_json)
     with open(downloaded_json, 'w') as outfile:
@@ -169,7 +174,12 @@ def download(url, downloaded):
                 "id": meta.get('id'),
                 "title": meta.get('title'),
                 "tags": meta.get('tags'),
+                "studio": {
+                    "name": meta.get('uploader_id'),
+                    "url": meta.get('uploader_url'),
+                },
                 "performers": meta.get('actors'),
+                "rating": meta.get('average_rating'),
             })
         except Exception as e:
             log.LogWarning(str(e))
@@ -190,7 +200,24 @@ def add_tags(client, tags):
 def add_performers(client, performers):
     if performers is not None:
         for performer in performers:
-            client.createPerformerByName(performer.get('given_name'))
+            performer_id = client.findPerformerIdWithName(performer.get('given_name'))
+
+            if performer_id is None:
+                client.createPerformerByName(performer.get('given_name'))
+                log.LogInfo('Performer created successfully')
+            else:
+                log.LogInfo('Performer already exists')
+
+
+def add_studio(client, studio):
+    if studio is not None:
+        studio_id = client.findStudioIdWithUrl(studio.get('url'))
+
+        if studio_id is None:
+            client.createStudio(studio.get('name'), studio.get('url'))
+            log.LogInfo('Studio created successfully')
+        else:
+            log.LogInfo('Studio already exists')
 
 
 main()

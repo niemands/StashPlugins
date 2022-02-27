@@ -547,7 +547,34 @@ class StashInterface:
         }
 
         result = self.__callGraphQL(query, variables)
-        return result.get('findStudios').get('studios')[0].get('id')
+        if result.get('findStudios').get('studios') != []:
+            return result.get('findStudios').get('studios')[0].get('id')
+        return None
+
+    def findStudiosWithName(self, name):
+        query="""
+        query($name: String!) {
+            findStudios(
+                studio_filter: {
+                    name: {value: $name, modifier: EQUALS}
+                }
+            ){
+                studios{
+                    id
+                    name
+                }
+            }
+        }
+        """
+
+        variables = {
+            'url': name
+        }
+
+        result = self.__callGraphQL(query, variables)
+        if result.get('findStudios').get('studios') != []:
+            return result.get('findStudios').get('studios')[0].get('id')
+        return None
 
     def createStudio(self, name, url=None):
         query = """
@@ -592,7 +619,9 @@ class StashInterface:
         }
 
         result = self.__callGraphQL(query, variables)
-        return result.get('findPerformers').get('performers')[0].get('id')
+        if result.get('findPerformers').get('performers') != []:
+            return result.get('findPerformers').get('performers')[0].get('id')
+        return None
 
 
     def createPerformerByName(self, name):

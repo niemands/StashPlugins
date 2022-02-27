@@ -83,7 +83,7 @@ def tag_scenes(client):
                 for t in scene.get('tags'):
                     tag_ids.append(t.get('id'))
                 tag_ids.append(get_scrape_tag(client))
-                if video.get('tags'):
+                if video.get('tags') is not None:
                     for tag in video.get('tags'):
                         tag_ids.append(client.findTagIdWithName(tag))
                 scene_data['tag_ids'] = tag_ids
@@ -91,12 +91,13 @@ def tag_scenes(client):
                 performer_ids = []
                 for p in scene.get('performers'):
                     performer_ids.append(p.get('id'))
-                if video.get('performers'):
-                    for performer in video.get('performer'):
+                if video.get('performers') is not None:
+                    for performer in video.get('performers'):
                         performer_ids.append(client.findPerformerIdWithName(performer.get('given_name')))
                 scene_data['performer_ids'] = performer_ids
 
-                if video.get('studio').get('url'):
+                if video.get('studio').get('url') is not None:
+                    log.LogDebug(video.get('studio').get('url'))
                     scene_data['studio_id'] = client.findStudioIdWithUrl(video.get('studio').get('url'))
                 elif scene.get('studio'):
                     scene_data['studio_id'] = scene.get('studio').get('id')
@@ -211,8 +212,17 @@ def add_performers(client, performers):
 
 
 def add_studio(client, studio):
-    if studio is not None:
+    if studio.get('url') != '':
+        log.LogDebug(str(studio))
         studio_id = client.findStudioIdWithUrl(studio.get('url'))
+
+        if studio_id is None:
+            client.createStudio(studio.get('name'), studio.get('url'))
+            log.LogInfo('Studio created successfully')
+        else:
+            log.LogInfo('Studio already exists')
+    elif studio.get('name') != '':
+        studio_id = client.findStudioIdWithName(studio.get('name'))
 
         if studio_id is None:
             client.createStudio(studio.get('name'), studio.get('url'))

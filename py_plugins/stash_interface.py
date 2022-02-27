@@ -1,4 +1,3 @@
-from ctypes.wintypes import VARIANT_BOOL
 import requests
 import sys
 import log

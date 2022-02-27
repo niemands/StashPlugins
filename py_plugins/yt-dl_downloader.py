@@ -97,7 +97,6 @@ def tag_scenes(client):
                 scene_data['performer_ids'] = performer_ids
 
                 if video.get('studio').get('url') is not None:
-                    log.LogDebug(video.get('studio').get('url'))
                     scene_data['studio_id'] = client.findStudioIdWithUrl(video.get('studio').get('url'))
                 elif scene.get('studio'):
                     scene_data['studio_id'] = scene.get('studio').get('id')
@@ -212,7 +211,7 @@ def add_performers(client, performers):
 
 
 def add_studio(client, studio):
-    if studio.get('url') != '':
+    if studio.get('url') is not None:
         log.LogDebug(str(studio))
         studio_id = client.findStudioIdWithUrl(studio.get('url'))
 
@@ -221,7 +220,7 @@ def add_studio(client, studio):
             log.LogInfo('Studio created successfully')
         else:
             log.LogInfo('Studio already exists')
-    elif studio.get('name') != '':
+    elif studio.get('name') is not None:
         studio_id = client.findStudioIdWithName(studio.get('name'))
 
         if studio_id is None:

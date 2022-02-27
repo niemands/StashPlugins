@@ -212,7 +212,6 @@ def add_performers(client, performers):
 
 def add_studio(client, studio):
     if studio.get('url') is not None:
-        log.LogDebug(str(studio))
         studio_id = client.findStudioIdWithUrl(studio.get('url'))
 
         if studio_id is None:

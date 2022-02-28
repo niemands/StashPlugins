@@ -89,19 +89,27 @@ class StashInterface:
 
     def findTagIdWithName(self, name):
         query = """
-            query {
-                allTags {
-                id
-                name
+            query($name: String!) {
+                findTags(
+                    tag_filter: {
+                        name: {value: $name, modifier: EQUALS}
+                    }
+                ){
+                    tags{
+                        id
+                        name
+                    }
                 }
             }
         """
 
-        result = self.__callGraphQL(query)
+        variables = {
+            'name': name,
+        }
 
-        for tag in result["allTags"]:
-            if tag["name"] == name:
-                return tag["id"]
+        result = self.__callGraphQL(query, variables)
+        if result.get('findTags') is not None and result.get('findTags').get('tags') != []:
+            return result.get('findTags').get('tags')[0]
         return None
 
     def createTagWithName(self, name):

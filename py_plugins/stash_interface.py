@@ -89,19 +89,27 @@ class StashInterface:
 
     def findTagIdWithName(self, name):
         query = """
-            query {
-                allTags {
-                id
-                name
+            query($name: String!) {
+                findTags(
+                    tag_filter: {
+                        name: {value: $name, modifier: EQUALS}
+                    }
+                ){
+                    tags{
+                        id
+                        name
+                    }
                 }
             }
         """
 
-        result = self.__callGraphQL(query)
+        variables = {
+            'name': name,
+        }
 
-        for tag in result["allTags"]:
-            if tag["name"] == name:
-                return tag["id"]
+        result = self.__callGraphQL(query, variables)
+        if result.get('findTags') is not None and result.get('findTags').get('tags') != []:
+            return result.get('findTags').get('tags')[0]
         return None
 
     def createTagWithName(self, name):
@@ -525,6 +533,56 @@ class StashInterface:
         result = self.__callGraphQL(query, variables)
         return result.get('scrapeGalleryURL')
 
+    def findStudioIdWithUrl(self, url):
+        query="""
+        query($url: String!) {
+            findStudios(
+                studio_filter: {
+                    url: {value: $url, modifier: EQUALS}
+                }
+            ){
+                studios{
+                    id
+                    name
+                }
+            }
+        }
+        """
+
+        variables = {
+            'url': url
+        }
+
+        result = self.__callGraphQL(query, variables)
+        if result.get('findStudios').get('studios') != []:
+            return result.get('findStudios').get('studios')[0].get('id')
+        return None
+
+    def findStudiosWithName(self, name):
+        query="""
+        query($name: String!) {
+            findStudios(
+                studio_filter: {
+                    name: {value: $name, modifier: EQUALS}
+                }
+            ){
+                studios{
+                    id
+                    name
+                }
+            }
+        }
+        """
+
+        variables = {
+            'url': name
+        }
+
+        result = self.__callGraphQL(query, variables)
+        if result.get('findStudios').get('studios') != []:
+            return result.get('findStudios').get('studios')[0].get('id')
+        return None
+
     def createStudio(self, name, url=None):
         query = """
             mutation($name: String!, $url: String) {
@@ -545,6 +603,33 @@ class StashInterface:
         else:
             log.LogError(f"Could not create studio: {name}")
             return None
+
+    def findPerformerIdWithName(self, name):
+        query = """
+            query($name: String!) {
+                findPerformers(
+                    performer_filter: {
+                    name: { value: $name, modifier: EQUALS }
+                    }
+                    filter: { sort: "id", direction: ASC }
+                ) {
+                    performers {
+                    id
+                    name
+                    }
+                }
+            }
+        """
+
+        variables = {
+            'name': name,
+        }
+
+        result = self.__callGraphQL(query, variables)
+        if result.get('findPerformers').get('performers') != []:
+            return result.get('findPerformers').get('performers')[0].get('id')
+        return None
+
 
     def createPerformerByName(self, name):
         query = """

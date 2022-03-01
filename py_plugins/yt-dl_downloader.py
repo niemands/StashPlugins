@@ -36,7 +36,7 @@ def run(json_input, output):
     try:
         client = StashInterface(json_input["server_connection"])
         if mode_arg == "" or mode_arg == "download":
-            read_urls_and_download()
+            read_urls_and_download(client)
             client.scan_for_new_files()
         elif mode_arg == "tag":
             tag_scenes(client)
@@ -47,19 +47,12 @@ def run(json_input, output):
 
 
 def tag_scenes(client):
-    endRegex = r'\.(?:[mM][pP]4 |[wW][mM][vV])$'
-    beginRegex = ".*("
     if not os.path.isfile(downloaded_json) and os.path.isfile(downloaded_backup_json):
         shutil.copyfile(downloaded_backup_json, downloaded_json)
     with open(downloaded_json) as json_file:
         data = json.load(json_file)
-        for i in range(0, len(data)):
-            if i < len(data) - 1:
-                beginRegex += data[i]['id'] + "|"
-            else:
-                beginRegex += data[i]['id'] + ").*"
-        log.LogDebug(beginRegex + endRegex)
-        scenes = client.findScenesByPathRegex(beginRegex)
+        regex = r'([a-zA-Z0-9]+).*\.(?:[mM][pP]4|[wW][mM][vV])$'
+        scenes = client.findScenesByPathRegex(regex)
 
         total = len(scenes)
         i = 0
@@ -90,14 +83,22 @@ def tag_scenes(client):
                 for t in scene.get('tags'):
                     tag_ids.append(t.get('id'))
                 tag_ids.append(get_scrape_tag(client))
+                if video.get('tags') is not None:
+                    for tag in video.get('tags'):
+                        tag_ids.append(client.findTagIdWithName(tag))
                 scene_data['tag_ids'] = tag_ids
 
                 performer_ids = []
                 for p in scene.get('performers'):
                     performer_ids.append(p.get('id'))
+                if video.get('performers') is not None:
+                    for performer in video.get('performers'):
+                        performer_ids.append(client.findPerformerIdWithName(performer.get('given_name')))
                 scene_data['performer_ids'] = performer_ids
 
-                if scene.get('studio'):
+                if video.get('studio').get('url') is not None:
+                    scene_data['studio_id'] = client.findStudioIdWithUrl(video.get('studio').get('url'))
+                elif scene.get('studio'):
                     scene_data['studio_id'] = scene.get('studio').get('id')
 
                 if scene.get('gallery'):
@@ -120,7 +121,7 @@ def get_scrape_tag(client):
         return tag_id
 
 
-def read_urls_and_download():
+def read_urls_and_download(client):
     with open(os.path.join(plugin_folder, 'urls.txt'), 'r') as url_file:
         urls = url_file.readlines()
     downloaded = []
@@ -131,6 +132,9 @@ def read_urls_and_download():
         log.LogProgress(i/total)
         if check_url_valid(url.strip()):
             download(url.strip(), downloaded)
+            add_tags(client, downloaded[len(downloaded)-1].get('tags'))
+            add_performers(client, downloaded[len(downloaded)-1].get('performers'))
+            add_studio(client, downloaded[len(downloaded)-1].get('studio'))
     if os.path.isfile(downloaded_json):
         shutil.move(downloaded_json, downloaded_backup_json)
     with open(downloaded_json, 'w') as outfile:
@@ -171,20 +175,58 @@ def download(url, downloaded):
                 "url": url,
                 "id": meta.get('id'),
                 "title": meta.get('title'),
+                "tags": meta.get('tags'),
+                "studio": {
+                    "name": meta.get('uploader_id'),
+                    "url": meta.get('uploader_url'),
+                },
+                "performers": meta.get('actors'),
             })
         except Exception as e:
             log.LogWarning(str(e))
 
 
-def add_tag(client):
-    tag_name = "scrape"
-    tag_id = client.findTagIdWithName(tag_name)
+def add_tags(client, tags):
+    if tags is not None:
+        for tag in tags:
+            tag_id = client.findTagIdWithName(tag)
+            
+            if tag_id is None:
+                client.createTagWithName(tag)
+                log.LogInfo("Tag created successfully")
+            else:
+                log.LogInfo("Tag already exists")
 
-    if tag_id is None:
-        client.createTagWithName(tag_name)
-        log.LogInfo("Tag created successfully")
-    else:
-        log.LogInfo("Tag already exists")
+
+def add_performers(client, performers):
+    if performers is not None:
+        for performer in performers:
+            performer_id = client.findPerformerIdWithName(performer.get('given_name'))
+
+            if performer_id is None:
+                client.createPerformerByName(performer.get('given_name'))
+                log.LogInfo('Performer created successfully')
+            else:
+                log.LogInfo('Performer already exists')
+
+
+def add_studio(client, studio):
+    if studio.get('url') is not None:
+        studio_id = client.findStudioIdWithUrl(studio.get('url'))
+
+        if studio_id is None:
+            client.createStudio(studio.get('name'), studio.get('url'))
+            log.LogInfo('Studio created successfully')
+        else:
+            log.LogInfo('Studio already exists')
+    elif studio.get('name') is not None:
+        studio_id = client.findStudioIdWithName(studio.get('name'))
+
+        if studio_id is None:
+            client.createStudio(studio.get('name'), studio.get('url'))
+            log.LogInfo('Studio created successfully')
+        else:
+            log.LogInfo('Studio already exists')
 
 
 main()

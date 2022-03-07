@@ -1,6 +1,6 @@
 name: Youtube-dl Downloader
 description: Download a video with youtube-dl
-version: 1.0
+version: 2.0
 url: https://github.com/niemands/StashPlugins
 exec:
   - python

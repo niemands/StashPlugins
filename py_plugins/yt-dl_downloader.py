@@ -158,12 +158,15 @@ def download(url, downloaded):
     log.LogDebug(f"Reading config file at: {config_path}")
     config = configparser.ConfigParser()
     config.read(config_path)
+    ytdl_options = {}
+    ytdl_options_to_dict(config.items('YTDL_OPTIONS'), ytdl_options)
     download_dir = str(pathlib.Path(config.get('PATHS', 'downloadDir') + '/%(id)s.%(ext)s').absolute())
     log.LogDebug("Downloading " + url + " to: " + download_dir)
 
     ydl = youtube_dl.YoutubeDL({
         'outtmpl': download_dir,
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        **ytdl_options,
     })
 
     with ydl:
@@ -184,6 +187,12 @@ def download(url, downloaded):
             })
         except Exception as e:
             log.LogWarning(str(e))
+    
+
+def ytdl_options_to_dict(tup, di):
+    for a, b in tup:
+        di.setdefault(a, bool(b))
+    return di
 
 
 def add_tags(client, tags):

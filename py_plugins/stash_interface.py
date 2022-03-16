@@ -97,7 +97,6 @@ class StashInterface:
                 ){
                     tags{
                         id
-                        name
                     }
                 }
             }
@@ -109,7 +108,7 @@ class StashInterface:
 
         result = self.__callGraphQL(query, variables)
         if result.get('findTags') is not None and result.get('findTags').get('tags') != []:
-            return result.get('findTags').get('tags')[0]
+            return result.get('findTags').get('tags')[0].get('id')
         return None
 
     def createTagWithName(self, name):

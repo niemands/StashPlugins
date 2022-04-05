@@ -1,6 +1,6 @@
 name: Set Pornhub Urls
 description: Search for all pornhub videos downloaded by Youtube-dl and set the url accordingly
-version: 2.5
+version: 2.5.1
 url: https://github.com/niemands/StashPlugins
 exec:
   - python

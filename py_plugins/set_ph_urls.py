@@ -27,7 +27,7 @@ def add_ph_urls(client):
     count = 0
 
     scenes = client.findScenesByPathRegex(
-        r"-ph[a-z0-9]{13}\.(?:[mM][pP]4|[wW][mM][vV])$"
+        r"^(?:.+-)?ph[a-z0-9]{13}\.(?:[mM][pP]4|[wW][mM][vV])$"
     )
 
     for scene in scenes:

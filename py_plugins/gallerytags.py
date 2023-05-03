@@ -54,6 +54,9 @@ def __copy_tags(client, galleries):
 	count = 0
 	for gallery in galleries:
 		if gallery.get('scenes') is not None:
+			if len(gallery.get('scenes')) == 0:
+				log.LogWarning(f'Gallery {gallery.get("id")} has no scene attached')
+				continue
 			if len(gallery.get('scenes')) > 1:
 				log.LogInfo(f'Gallery {gallery.get("id")} has multiple scenes, only copying tags from first scene')
 			# Select first scene from gallery scenes

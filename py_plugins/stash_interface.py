@@ -58,6 +58,9 @@ class StashInterface:
                     response.status_code, response.content, query, variables)
             )
 
+    def callGraphQL(self, query, variables=None):
+        return self.__callGraphQL(query, variables)
+
     def scan_for_new_files(self):
         try:
             query = """
@@ -314,6 +317,7 @@ class StashInterface:
                         id
                     }
               url
+              tags { id }
             }
           }
         }
@@ -367,13 +371,9 @@ class StashInterface:
         return galleries
 
     def findImages(self, image_filter=None):
-        return self.__findImages(image_filter)
-
-    def __findImages(self, image_filter=None, page=1):
-        per_page = 1000
         query = """
-        query($per_page: Int, $page: Int, $image_filter: ImageFilterType) {
-            findImages(image_filter: $image_filter ,filter: { per_page: $per_page, page: $page }) {
+        query($image_filter: ImageFilterType) {
+            findImages(image_filter: $image_filter ,filter: { per_page: -1 }) {
                 count
                 images {
                     id
@@ -390,29 +390,19 @@ class StashInterface:
                     rating
                     galleries {
                         id
+                        date
                     }
                 }
             }
         }
         """
 
-        variables = {
-            'per_page': per_page,
-            'page': page
-        }
+        variables = {}
         if image_filter:
             variables['image_filter'] = image_filter
 
         result = self.__callGraphQL(query, variables)
-
-        images = result.get('findImages').get('images')
-
-        if len(images) == per_page:
-            next_page = self.__findImages(image_filter, page + 1)
-            for image in next_page:
-                images.append(image)
-
-        return images
+        return result.get('findImages').get('images')
 
     def updateImageStudio(self, image_ids, studio_id):
         query = """
@@ -430,39 +420,43 @@ class StashInterface:
 
         self.__callGraphQL(query, variables)
 
-    def findScenesByTags(self, tag_ids):
-        return self.__findScenesByTags(tag_ids)
-
-    def __findScenesByTags(self, tag_ids, page=1):
+    def updateImageDate(self, image_ids, date):
         query = """
-        query($tags: [ID!], $page: Int) {
-            findScenes(
-                scene_filter: { tags: { modifier: INCLUDES_ALL, value: $tags } }
-                filter: { per_page: 1000, page: $page }
-            ) {
-                count
-                scenes {
-                    id
-                    url
-                }
+        mutation ($ids: [ID!], $date: String) {
+            bulkImageUpdate(input: {ids: $ids, date: $date}) {
+                id
             }
         }
         """
 
         variables = {
-            "page": page,
-            "tags": tag_ids
+            "ids": image_ids,
+            "date": date
         }
 
+        self.__callGraphQL(query, variables)
+
+    def findScenesByTags(self, tag_ids):
+        query = """
+                query($tags: [ID!], $page: Int) {
+                    findScenes(
+                        scene_filter: { tags: { modifier: INCLUDES_ALL, value: $tags } }
+                        filter: { per_page: 1000, page: $page }
+                    ) {
+                        count
+                        scenes {
+                            id
+                            url
+                            tags { id }
+                        }
+                    }
+                }
+                """
+        variables = {
+            "tags": tag_ids
+        }
         result = self.__callGraphQL(query, variables)
-        scenes = result.get('findScenes').get('scenes')
-
-        if len(scenes) == 1000:
-            next_page = self.__findScenesByTags(tag_ids, page + 1)
-            for scene in next_page:
-                scenes.append(scene)
-
-        return scenes
+        return result.get('findScenes').get('scenes')
 
     # Scrape scene information from url
     def scrapeSceneURL(self, url):
@@ -534,7 +528,7 @@ class StashInterface:
         return result.get('scrapeGalleryURL')
 
     def findStudioIdWithUrl(self, url):
-        query="""
+        query = """
         query($url: String!) {
             findStudios(
                 studio_filter: {
@@ -559,7 +553,7 @@ class StashInterface:
         return None
 
     def findStudiosWithName(self, name):
-        query="""
+        query = """
         query($name: String!) {
             findStudios(
                 studio_filter: {
@@ -629,7 +623,6 @@ class StashInterface:
         if result.get('findPerformers').get('performers') != []:
             return result.get('findPerformers').get('performers')[0].get('id')
         return None
-
 
     def createPerformerByName(self, name):
         query = """

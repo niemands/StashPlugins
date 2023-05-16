@@ -1,6 +1,6 @@
 name: Copy information to gallery
 description: Copy information from attached scene to all galleries with CopyTags tag
-version: 1.3
+version: 1.4
 url: https://github.com/niemands/StashPlugins
 exec:
   - python
@@ -27,4 +27,7 @@ tasks:
     description: Copies the Studio from each gallery to the corresponding images
     defaultArgs:
       mode: studioImageCopy
-
+  - name: Copy date to images
+    description: Copies the date from each gallery to the corresponding images
+    defaultArgs:
+      mode: dateImageCopy

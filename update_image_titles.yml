@@ -1,6 +1,6 @@
 name: Update Image Titles
-description: Updates all images, so natural sort will work for all images
-version: 1.0
+description: Update all images with empty title to its basename, so natural sort will work
+version: 1.1
 url: https://github.com/niemands/StashPlugins
 exec:
   - python

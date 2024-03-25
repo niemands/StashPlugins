@@ -677,16 +677,16 @@ class StashInterface:
             return None
 
     def sceneScraperURLs(self):
-        query = "query {listSceneScrapers {name scene {urls supported_scrapes}}}"
+        query = "query {listScrapers(types: SCENE) {name scene {urls supported_scrapes}}}"
 
         response = self.__callGraphQL(query)
-        url_lists = [x.get('scene').get('urls') for x in response.get('listSceneScrapers')
+        url_lists = [x.get('scene').get('urls') for x in response.get('listScrapers')
                      if 'URL' in x.get('scene').get('supported_scrapes')]
         return [urlparse('https://' + url).netloc for sublist in url_lists for url in sublist]
 
     def galleryScraperURLs(self):
-        query = "query {listGalleryScrapers {name gallery {urls supported_scrapes}}}"
+        query = "query {listScrapers(types: GALLERY) {name gallery {urls supported_scrapes}}}"
         response = self.__callGraphQL(query)
-        url_lists = [x.get('gallery').get('urls') for x in response.get('listGalleryScrapers')
+        url_lists = [x.get('gallery').get('urls') for x in response.get('listScrapers')
                      if 'URL' in x.get('gallery').get('supported_scrapes')]
         return [urlparse('https://' + url).netloc for sublist in url_lists for url in sublist]
